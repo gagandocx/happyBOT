@@ -1,0 +1,9 @@
+# Python bytecode / caches from running the analyzer and its tests
+__pycache__/
+*.py[cod]
+
+# Generated analyzer output for real backtest reports.
+# The synthetic verification artifacts under reports/samples/ are intentionally
+# kept (they are negated below).
+reports/*.summary.json
+!reports/samples/*.summary.json
