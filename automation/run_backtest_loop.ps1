@@ -58,8 +58,8 @@ param(
 $Config = @{
 
     # --- MetaTrader 5 program files (the INSTALL dir, e.g. C:\Program Files\...) ---
-    MetaEditor64Exe = 'C:\Program Files\FusionMarkets MetaTrader 5\metaeditor64.exe'
-    Terminal64Exe   = 'C:\Program Files\FusionMarkets MetaTrader 5\terminal64.exe'
+    MetaEditor64Exe = 'C:\Program Files\Fusion Markets MetaTrader 5\metaeditor64.exe'
+    Terminal64Exe   = 'C:\Program Files\Fusion Markets MetaTrader 5\terminal64.exe'
 
     # --- Per-user MT5 DATA folder (the hashed folder, NOT the install dir) ---
     # Under %APPDATA%\MetaQuotes\Terminal\<HASH>. It is the one that contains a
