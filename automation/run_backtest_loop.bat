@@ -1,6 +1,6 @@
 @echo off
 REM ==========================================================================
-REM  GaganEA backtest loop — double-click wrapper for run_backtest_loop.ps1
+REM  GaganEA backtest loop - double-click wrapper for run_backtest_loop.ps1
 REM ==========================================================================
 REM  Launches the PowerShell harness in the SAME folder as this .bat, bypassing
 REM  the execution policy for this one invocation only (does NOT change system
@@ -26,7 +26,7 @@ set "RC=%ERRORLEVEL%"
 echo.
 echo ==========================================================================
 echo  run_backtest_loop.ps1 finished with exit code %RC%.
-echo  (0 = success; non-zero = a step failed — scroll up or read the log under
+echo  (0 = success; non-zero = a step failed - scroll up or read the log under
 echo   automation\logs\ for details.)
 echo ==========================================================================
 echo.

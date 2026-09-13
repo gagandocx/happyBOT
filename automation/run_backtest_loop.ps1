@@ -1,13 +1,13 @@
 <#
 ================================================================================
- GaganEA — automated backtest loop  (run_backtest_loop.ps1)
+ GaganEA - automated backtest loop  (run_backtest_loop.ps1)
 ================================================================================
  Runs, hands-off, the full round loop on YOUR local Windows PC:
 
    (a) git pull the repo
    (b) copy GaganEA.mq5 into the MT5 MQL5\Experts folder
    (c) compile it headlessly with metaeditor64.exe and PARSE the compile log
-       (aborting on any compile error — the metaeditor exit code is unreliable
+       (aborting on any compile error - the metaeditor exit code is unreliable
        across builds, so we do NOT trust it)
    (d) generate a runtime tester .ini from backtest_template.ini and run
        terminal64.exe headlessly, WAITING for it to exit (ShutdownTerminal=1)
@@ -18,7 +18,7 @@
        skipping when nothing changed
 
  --------------------------------------------------------------------------
- AUTHORED IN A LINUX SANDBOX — NOT EXECUTED THERE.
+ AUTHORED IN A LINUX SANDBOX - NOT EXECUTED THERE.
  There is no MT5, no MQL5 compiler, and no PowerShell in the authoring
  sandbox, so this script has NOT been run end-to-end. Do a careful FIRST
  MANUAL RUN on your PC (watch the console + the log under automation\logs\)
@@ -183,7 +183,7 @@ try {
 }
 
 # ==============================================================================
-# STEP (a) — git pull
+# STEP (a) - git pull
 # ==============================================================================
 try {
     Write-Log "STEP (a) git pull" 'STEP'
@@ -202,7 +202,7 @@ try {
 }
 
 # ==============================================================================
-# STEP (b) — copy the EA source into MT5's MQL5\Experts
+# STEP (b) - copy the EA source into MT5's MQL5\Experts
 # ==============================================================================
 $ExpertMq5InRepo = Join-Path $Config.RepoDir 'GaganEA.mq5'
 $ExpertMq5InMt5  = Join-Path $ExpertsDir ("{0}.mq5" -f $Config.ExpertName)
@@ -218,7 +218,7 @@ try {
 }
 
 # ==============================================================================
-# STEP (c) — headless compile + PARSE the log (exit code is unreliable)
+# STEP (c) - headless compile + PARSE the log (exit code is unreliable)
 # ==============================================================================
 $CompileLog = Join-Path $LogDir ("compile_{0}_{1}.log" -f $RoundTag, $LogStamp)
 try {
@@ -269,7 +269,7 @@ try {
 }
 
 # ==============================================================================
-# STEP (d) — generate runtime .ini and run terminal64 headlessly, WAIT for exit
+# STEP (d) - generate runtime .ini and run terminal64 headlessly, WAIT for exit
 # ==============================================================================
 $ReportBaseName = "{0}_{1}" -f $RoundTag, $RunDate     # e.g. round03_20260911
 $ReportInMt5    = Join-Path $ExpertsDir ("..\..\{0}.html" -f $ReportBaseName)  # MT5 data root
@@ -296,7 +296,7 @@ try {
 }
 
 # ==============================================================================
-# STEP (e) — locate the report and copy it to reports\roundNN_YYYYMMDD.html
+# STEP (e) - locate the report and copy it to reports\roundNN_YYYYMMDD.html
 # ==============================================================================
 $FinalReport = Join-Path $ReportsDir ("{0}.html" -f $ReportBaseName)
 try {
@@ -326,7 +326,7 @@ try {
 }
 
 # ==============================================================================
-# STEP (f) — best-effort, NON-FATAL analyzer run
+# STEP (f) - best-effort, NON-FATAL analyzer run
 # ==============================================================================
 try {
     Write-Log "STEP (f) analyze (best-effort, non-fatal)" 'STEP'
@@ -338,9 +338,9 @@ try {
     }
 
     if (-not (Test-Path -LiteralPath $analyzer)) {
-        Write-Log "analyzer tools\analyze_report.py not found — skipping analysis." 'WARN'
+        Write-Log "analyzer tools\analyze_report.py not found - skipping analysis." 'WARN'
     } elseif (-not $python) {
-        Write-Log "Python not found on PATH — skipping analysis (install Python 3 to enable)." 'WARN'
+        Write-Log "Python not found on PATH - skipping analysis (install Python 3 to enable)." 'WARN'
     } else {
         Push-Location -LiteralPath $Config.RepoDir
         try {
@@ -358,7 +358,7 @@ try {
 }
 
 # ==============================================================================
-# STEP (g) — git add / commit / push, gracefully skipping when nothing changed
+# STEP (g) - git add / commit / push, gracefully skipping when nothing changed
 # ==============================================================================
 try {
     Write-Log "STEP (g) git add / commit / push" 'STEP'
@@ -386,14 +386,14 @@ try {
         # Nothing staged? Skip commit/push without erroring.
         $staged = & git diff --cached --name-only
         if ([string]::IsNullOrWhiteSpace(($staged -join ''))) {
-            Write-Log "Nothing changed to commit — skipping commit/push." 'WARN'
+            Write-Log "Nothing changed to commit - skipping commit/push." 'WARN'
         } else {
             $prettyDate = '{0}-{1}-{2}' -f $RunDate.Substring(0,4), $RunDate.Substring(4,2), $RunDate.Substring(6,2)
             $msg = "Round {0} backtest report ({1})" -f $RoundNumber, $prettyDate
             & git commit -m $msg 2>&1 | ForEach-Object { Write-Log $_ }
             & git push origin $Config.GitBranch 2>&1 | ForEach-Object { Write-Log $_ }
             if ($LASTEXITCODE -ne 0) {
-                throw "git push failed (see log; check auth / credential helper — SETUP.md section 9)."
+                throw "git push failed (see log; check auth / credential helper - SETUP.md section 9)."
             }
             Write-Log ("Committed + pushed: {0}" -f $msg)
         }
