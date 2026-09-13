@@ -1,19 +1,30 @@
 //+------------------------------------------------------------------+
-//|                                        GaganEA v2.11 |
+//|                                        GaganEA v2.12 |
 //|                           Reconstructed from UI + Backtest Data  |
 //|                                                                  |
-//| ROUND 2 CONSERVATIVE BUILD (v2.11):                              |
-//|  Round 1 baseline (prior stock build): net -387.57, DD 41.09pct, |
-//|  PF 0.62, win rate 52.27%, 2204 trades. Diagnosis: overtrading,  |
-//|  winners smaller than losers, 6% risk + stacking drive the DD.   |
-//|  Round 2 attacks survival first: cut risk (1%), cap concurrent   |
-//|  positions, widen entry distance + stacking gap, add an entry    |
-//|  cooldown, disable the noisier patterns, fix reward:risk, and    |
-//|  wire up the previously-dead real-SL protection functions.       |
-//|  See ITERATION_LOG.md Round 2 for the exact changes.             |
+//| ROUND 4 STRUCTURAL EDGE ATTEMPT (v2.12):                         |
+//|  Prior builds still lost (PF < 1, avg loss > avg win, ~52% win   |
+//|  rate = near-random entries). Round 4 redesigns entry + exit to  |
+//|  attack the negative edge, keeping the conservative-DD posture.  |
+//|  ENTRY: gate the pattern-zoo behind a confluence filter -        |
+//|  HTF+CTF trend agreement + ATR volatility-regime filter (skip    |
+//|  dead/hostile chop) + EMA pullback-and-resume with RSI           |
+//|  confirmation + optional session/hour filter.                    |
+//|  EXIT: optional ATR-based dynamic SL and ATR-scaled target       |
+//|  enforcing reward:risk ~1.67 so winners can structurally exceed  |
+//|  losers. When the ATR SL/TP path is active the T1/T2/T3 tiers    |
+//|  are ATR-scaled (Use_ATR_Scaled_Tiers) so they bank and arm the  |
+//|  after-T2 runner trail INSIDE the hard TP instead of being       |
+//|  pre-empted by it. All new logic is additive + reversible via    |
+//|  its own switch: set Use_Confluence_Entry, Use_ATR_Dynamic_SLTP, |
+//|  Use_ATR_Regime_Filter and Use_Session_Filter all false to       |
+//|  reproduce the prior-build entry/exit behavior (the confluence   |
+//|  and ATR SL/TP switches alone leave the regime + session gates   |
+//|  active, since those are independent filters).                   |
+//|  See ITERATION_LOG.md Round 4 for the exact changes.             |
 //+------------------------------------------------------------------+
-#property copyright "GaganEA v2.11"
-#property version   "2.11"
+#property copyright "GaganEA v2.12"
+#property version   "2.12"
 #property strict
 
 #include <Trade\Trade.mqh>
@@ -152,6 +163,35 @@ input bool            Use_BullTriangle   = false;
 input group "=== NEWS FILTER ==="
 input bool            News_FilterEnable  = false;
 
+input group "=== ATR VOLATILITY / DYNAMIC SL-TP (Round 4) ==="
+input int             ATR_Period           = 14;
+input ENUM_TIMEFRAMES ATR_Timeframe        = PERIOD_M5;
+input bool            Use_ATR_Regime_Filter = true;
+input double          ATR_Min_Points       = 150.0;    // min ATR in POINTS to allow trading (skip dead chop)
+input double          ATR_Max_Points       = 4000.0;   // max ATR in POINTS to allow trading (skip hostile spikes)
+input bool            Use_ATR_Dynamic_SLTP = true;
+input double          ATR_SL_Mult          = 1.5;      // SL distance = ATR_SL_Mult * ATR (price units)
+input double          ATR_TP_Mult          = 2.5;      // core TP distance = ATR_TP_Mult * ATR (R:R ~1.67)
+input bool            Use_ATR_Scaled_Tiers = true;     // when ATR SL/TP is on, scale the T1/T2/T3 tiers off ATR too
+input double          ATR_T1_Mult          = 0.8;      // T1 tier distance = ATR_T1_Mult * ATR (below TP so it banks first)
+input double          ATR_T2_Mult          = 1.5;      // T2 tier distance = ATR_T2_Mult * ATR (arms the after-T2 runner trail)
+input double          ATR_T3_Mult          = 2.2;      // T3 tier distance = ATR_T3_Mult * ATR (below ATR_TP_Mult so the trail can run)
+
+input group "=== ENTRY CONFLUENCE (Round 4) ==="
+input bool            Use_Confluence_Entry   = true;   // master switch for the new confluence gate
+input bool            Require_Pattern_Confirm = false; // also require legacy pattern as secondary confirm
+input int             RSI_Entry_Period       = 14;
+input double          RSI_Buy_Max            = 68.0;   // do NOT buy if entry RSI above this (overbought)
+input double          RSI_Sell_Min           = 32.0;   // do NOT sell if entry RSI below this (oversold)
+input int             Pullback_Lookback      = 6;      // bars to look back for EMA pullback-and-resume
+
+input group "=== SESSION / TIME FILTER (Round 4) ==="
+input bool            Use_Session_Filter   = true;
+input int             Session_Start_Hour   = 7;        // server hour, inclusive
+input int             Session_End_Hour     = 20;       // server hour, exclusive
+input bool            Skip_Rollover_Hour   = true;     // skip the hour around broker rollover
+input int             Rollover_Hour        = 0;        // server hour to skip when Skip_Rollover_Hour
+
 input group "=== DASHBOARD & MAGIC ==="
 input bool            Show_Dashboard     = true;
 input int             Dashboard_X        = 15;
@@ -159,13 +199,15 @@ input int             Dashboard_Y        = 30;
 input int             Magic_Number       = 202400;
 input int             Max_Slippage       = 10;
 input int             Max_Spread_Pips    = 50;
-input string          EA_Comment         = "GaganEA";
+input string          EA_Comment         = "GaganEA v2.12";
 
 //+------------------------------------------------------------------+
 //| GLOBAL VARIABLES                                                  |
 //+------------------------------------------------------------------+
 int ema_htf_handle, ema_ctf_handle, ama_handle;
 int rsi_handle, macd_handle, adx_handle, vol_handle;
+int atr_handle = INVALID_HANDLE;
+int rsi_entry_handle = INVALID_HANDLE;
 int reversal_buy_signals, reversal_sell_signals;
 
 string lbl = "GEA_";
@@ -252,6 +294,30 @@ int OnInit()
       }
    }
    
+   // Round 4: ATR handle for regime filter and/or dynamic SL/TP
+   atr_handle = INVALID_HANDLE;
+   if(Use_ATR_Regime_Filter || Use_ATR_Dynamic_SLTP)
+   {
+      atr_handle = iATR(_Symbol, ATR_Timeframe, ATR_Period);
+      if(atr_handle == INVALID_HANDLE)
+      {
+         Print("Failed to create ATR handle");
+         return INIT_FAILED;
+      }
+   }
+
+   // Round 4: entry RSI handle for confluence gate (separate from reversal-exit RSI_Period)
+   rsi_entry_handle = INVALID_HANDLE;
+   if(Use_Confluence_Entry)
+   {
+      rsi_entry_handle = iRSI(_Symbol, Trade_Timeframe, RSI_Entry_Period, PRICE_CLOSE);
+      if(rsi_entry_handle == INVALID_HANDLE)
+      {
+         Print("Failed to create entry RSI handle");
+         return INIT_FAILED;
+      }
+   }
+
    ArrayResize(t1_tickets, 0);
    ArrayResize(t2_tickets, 0);
    prevAMA = 0;
@@ -283,7 +349,7 @@ int OnInit()
    
    if(Show_Dashboard) CreateDashboard();
    
-   Print("GaganEA v2.11 initialized on ", _Symbol, " TF:", EnumToString(Trade_Timeframe));
+   Print("GaganEA v2.12 initialized on ", _Symbol, " TF:", EnumToString(Trade_Timeframe));
    return INIT_SUCCEEDED;
 }
 
@@ -303,9 +369,12 @@ void OnDeinit(const int reason)
       if(adx_handle != INVALID_HANDLE)  IndicatorRelease(adx_handle);
       if(vol_handle != INVALID_HANDLE)  IndicatorRelease(vol_handle);
    }
+
+   if(atr_handle != INVALID_HANDLE)       IndicatorRelease(atr_handle);
+   if(rsi_entry_handle != INVALID_HANDLE) IndicatorRelease(rsi_entry_handle);
    
    DeleteDashboard();
-   Print("GaganEA v2.11 removed. Reason: ", reason);
+   Print("GaganEA v2.12 removed. Reason: ", reason);
 }
 
 //+------------------------------------------------------------------+
@@ -401,6 +470,102 @@ void OnTick()
 }
 
 //+------------------------------------------------------------------+
+//| Get ATR (Round 4) - returns ATR in PRICE units, 0 if unavailable  |
+//+------------------------------------------------------------------+
+double GetATR()
+{
+   double a[];
+   ArraySetAsSeries(a, true);
+   if(atr_handle == INVALID_HANDLE) return 0;
+   if(CopyBuffer(atr_handle, 0, 0, 2, a) < 2) return 0;
+   return a[0];
+}
+
+//+------------------------------------------------------------------+
+//| Session / time filter (Round 4) - true = OK to trade this hour    |
+//+------------------------------------------------------------------+
+bool SessionOK()
+{
+   if(!Use_Session_Filter) return true;
+   MqlDateTime mdt;
+   TimeToStruct(TimeCurrent(), mdt);
+   int hour = mdt.hour;
+   if(hour < Session_Start_Hour || hour >= Session_End_Hour) return false;
+   if(Skip_Rollover_Hour && hour == Rollover_Hour) return false;
+   return true;
+}
+
+//+------------------------------------------------------------------+
+//| Bullish EMA pullback-and-resume (Round 4)                         |
+//| Within the last Pullback_Lookback bars price dipped toward/below  |
+//| the CTF EMA, and the most recent CLOSED bar closed back above it. |
+//+------------------------------------------------------------------+
+bool BullPullbackResume()
+{
+   int need = Pullback_Lookback + 2;
+   if(need < 3) need = 3;
+   double ema[], close[], low[];
+   ArraySetAsSeries(ema, true);
+   ArraySetAsSeries(close, true);
+   ArraySetAsSeries(low, true);
+   if(CopyBuffer(ema_ctf_handle, 0, 0, need, ema) < need) return false;
+   if(CopyClose(_Symbol, Trade_Timeframe, 0, need, close) < need) return false;
+   if(CopyLow(_Symbol, Trade_Timeframe, 0, need, low) < need) return false;
+
+   // Resume: last closed bar (index 1) closed back above the CTF EMA
+   if(close[1] <= ema[1]) return false;
+
+   // Pullback: within the window BEFORE the resume bar (bars 2..Pullback_Lookback)
+   // a bar dipped its low toward/below the CTF EMA. Starting at bar 2 keeps this a
+   // fresh-pullback-then-resume filter (the resume bar 1 cannot double-count).
+   for(int i = 2; i <= Pullback_Lookback; i++)
+   {
+      if(low[i] <= ema[i]) return true;
+   }
+   return false;
+}
+
+//+------------------------------------------------------------------+
+//| Bearish EMA pullback-and-resume (Round 4)                         |
+//+------------------------------------------------------------------+
+bool BearPullbackResume()
+{
+   int need = Pullback_Lookback + 2;
+   if(need < 3) need = 3;
+   double ema[], close[], high[];
+   ArraySetAsSeries(ema, true);
+   ArraySetAsSeries(close, true);
+   ArraySetAsSeries(high, true);
+   if(CopyBuffer(ema_ctf_handle, 0, 0, need, ema) < need) return false;
+   if(CopyClose(_Symbol, Trade_Timeframe, 0, need, close) < need) return false;
+   if(CopyHigh(_Symbol, Trade_Timeframe, 0, need, high) < need) return false;
+
+   // Resume: last closed bar (index 1) closed back below the CTF EMA
+   if(close[1] >= ema[1]) return false;
+
+   // Pullback: a bar within the window BEFORE the resume bar (bars 2..Pullback_Lookback)
+   // poked its high toward/above the EMA. Starting at bar 2 keeps this a
+   // fresh-pullback-then-resume filter (the resume bar 1 cannot double-count).
+   for(int i = 2; i <= Pullback_Lookback; i++)
+   {
+      if(high[i] >= ema[i]) return true;
+   }
+   return false;
+}
+
+//+------------------------------------------------------------------+
+//| Read entry RSI (Round 4) - returns most recent value, -1 if N/A   |
+//+------------------------------------------------------------------+
+double GetEntryRSI()
+{
+   double r[];
+   ArraySetAsSeries(r, true);
+   if(rsi_entry_handle == INVALID_HANDLE) return -1;
+   if(CopyBuffer(rsi_entry_handle, 0, 0, 3, r) < 3) return -1;
+   return r[0];
+}
+
+//+------------------------------------------------------------------+
 //| Open Trade Logic                                                  |
 //+------------------------------------------------------------------+
 void OpenTrade()
@@ -432,16 +597,67 @@ void OpenTrade()
       if((nowBar - last_entry_bar_time) < (Entry_Cooldown_Bars * PeriodSeconds(Trade_Timeframe)))
          return;
    }
-   
+
+   // --- Round 4 confluence gates (shared by BUY and SELL) --------------
+   // (a) SESSION / time-of-day: skip illiquid + rollover hours.
+   if(!SessionOK()) return;
+
+   // (b) ATR volatility regime: skip dead chop / hostile spikes.
+   //     ATR indicator returns PRICE units; convert to points to compare.
+   double atr = GetATR();  // 0 when data not ready or handle absent
+   if(Use_ATR_Regime_Filter)
+   {
+      if(atr <= 0) return;  // data not ready -> do not trade this bar
+      double atrPts = atr / _Point;
+      if(atrPts < ATR_Min_Points || atrPts > ATR_Max_Points) return;
+   }
+
+   // (c) Entry RSI (only needed for the confluence gate).
+   double rsiEntry = Use_Confluence_Entry ? GetEntryRSI() : -1;
+
+   // Helper flags: when confluence is OFF fall back to legacy pattern gate.
+   double minStop = (double)SymbolInfoInteger(_Symbol, SYMBOL_TRADE_STOPS_LEVEL) * _Point;
+
    // BUY
    if(htfBull && ctfBull && farEnough)
    {
-      int pat = DetectBullishPattern();
-      if(pat > 0 && DistanceCheckOK(ORDER_TYPE_BUY))
+      bool buyOK;
+      int  pat = DetectBullishPattern();
+      if(Use_Confluence_Entry)
+      {
+         // confluence: fresh EMA pullback-and-resume + RSI not overbought
+         buyOK = BullPullbackResume() && (rsiEntry >= 0 && rsiEntry <= RSI_Buy_Max);
+         if(Require_Pattern_Confirm) buyOK = buyOK && (pat > 0);
+      }
+      else
+      {
+         buyOK = (pat > 0);  // legacy pattern-gate behavior
+      }
+
+      if(buyOK && DistanceCheckOK(ORDER_TYPE_BUY))
       {
          double lots = CalcLotSize();
-         double sl = Use_StopLoss ? (ask - StopLoss_Pips * _Point) : 0;
-         if(trade.Buy(lots, _Symbol, ask, sl, 0, EA_Comment))
+         double sl, tp = 0;
+         if(Use_ATR_Dynamic_SLTP && atr > 0)
+         {
+            // ATR-scaled protective stop + hard core target (R:R = TP/SL mult)
+            double slDist = ATR_SL_Mult * atr;
+            // Clamp SL up to the broker min-stop first, then re-derive TP from the
+            // (possibly clamped) SL so the intended reward:risk ratio is preserved
+            // even in low-ATR conditions (issue: independent clamps degraded R:R->1.0).
+            if(minStop > 0 && slDist < minStop) slDist = minStop;
+            double tpDist = slDist * (ATR_TP_Mult / ATR_SL_Mult);
+            if(minStop > 0 && tpDist < minStop) tpDist = minStop;
+            sl = NormalizeDouble(ask - slDist, _Digits);
+            tp = NormalizeDouble(ask + tpDist, _Digits);
+            // NOTE: T1/T2/T3 partials still run underneath this ATR stop/target
+            //       (ATR-scaled when Use_ATR_Scaled_Tiers is on, see ManageTargets).
+         }
+         else
+         {
+            sl = Use_StopLoss ? (ask - StopLoss_Pips * _Point) : 0;  // legacy fixed SL
+         }
+         if(trade.Buy(lots, _Symbol, ask, sl, tp, EA_Comment))
          {
             last_entry_bar_time = iTime(_Symbol, Trade_Timeframe, 0);
             Print("BUY opened: ", DoubleToString(lots,2), " lots | Pattern:", pat);
@@ -452,12 +668,38 @@ void OpenTrade()
    // SELL
    if(htfBear && ctfBear && farEnough)
    {
-      int pat = DetectBearishPattern();
-      if(pat > 0 && DistanceCheckOK(ORDER_TYPE_SELL))
+      bool sellOK;
+      int  pat = DetectBearishPattern();
+      if(Use_Confluence_Entry)
+      {
+         sellOK = BearPullbackResume() && (rsiEntry >= 0 && rsiEntry >= RSI_Sell_Min);
+         if(Require_Pattern_Confirm) sellOK = sellOK && (pat > 0);
+      }
+      else
+      {
+         sellOK = (pat > 0);  // legacy pattern-gate behavior
+      }
+
+      if(sellOK && DistanceCheckOK(ORDER_TYPE_SELL))
       {
          double lots = CalcLotSize();
-         double sl = Use_StopLoss ? (bid + StopLoss_Pips * _Point) : 0;
-         if(trade.Sell(lots, _Symbol, bid, sl, 0, EA_Comment))
+         double sl, tp = 0;
+         if(Use_ATR_Dynamic_SLTP && atr > 0)
+         {
+            double slDist = ATR_SL_Mult * atr;
+            // Clamp SL up to the broker min-stop first, then re-derive TP from the
+            // (possibly clamped) SL so the intended reward:risk ratio is preserved.
+            if(minStop > 0 && slDist < minStop) slDist = minStop;
+            double tpDist = slDist * (ATR_TP_Mult / ATR_SL_Mult);
+            if(minStop > 0 && tpDist < minStop) tpDist = minStop;
+            sl = NormalizeDouble(bid + slDist, _Digits);
+            tp = NormalizeDouble(bid - tpDist, _Digits);
+         }
+         else
+         {
+            sl = Use_StopLoss ? (bid + StopLoss_Pips * _Point) : 0;  // legacy fixed SL
+         }
+         if(trade.Sell(lots, _Symbol, bid, sl, tp, EA_Comment))
          {
             last_entry_bar_time = iTime(_Symbol, Trade_Timeframe, 0);
             Print("SELL opened: ", DoubleToString(lots,2), " lots | Pattern:", pat);
@@ -565,6 +807,27 @@ bool DistanceCheckOK(ENUM_ORDER_TYPE type)
 //+------------------------------------------------------------------+
 void ManageTargets()
 {
+   // Effective tier thresholds in POINTS. By default these are the fixed
+   // T1/T2/T3_Pips inputs. When the ATR SL/TP path is active AND
+   // Use_ATR_Scaled_Tiers is on, scale the tiers off the current ATR so they
+   // sit INSIDE the hard ATR TP (ATR_TP_Mult): T1/T2/T3 = ATR_Tx_Mult*ATR/_Point.
+   // With the default mults 0.8 < 1.5 < 2.2 < 2.5 the tiers bank and the after-T2
+   // runner trail arms before the broker-side TP can pre-empt it. Falls back to
+   // the fixed tiers when ATR is off or not ready (reversible via the switch).
+   double t1Thr = (double)T1_Pips;
+   double t2Thr = (double)T2_Pips;
+   double t3Thr = (double)T3_Pips;
+   if(Use_ATR_Dynamic_SLTP && Use_ATR_Scaled_Tiers)
+   {
+      double atrNow = GetATR();
+      if(atrNow > 0)
+      {
+         t1Thr = ATR_T1_Mult * atrNow / _Point;
+         t2Thr = ATR_T2_Mult * atrNow / _Point;
+         t3Thr = ATR_T3_Mult * atrNow / _Point;
+      }
+   }
+
    for(int i = PositionsTotal()-1; i >= 0; i--)
    {
       if(!posInfo.SelectByIndex(i)) continue;
@@ -582,7 +845,7 @@ void ManageTargets()
          pips = (op - SymbolInfoDouble(_Symbol, SYMBOL_ASK)) / _Point;
       
       // T1
-      if(pips >= T1_Pips && !TicketInArray(t1_tickets, ticket))
+      if(pips >= t1Thr && !TicketInArray(t1_tickets, ticket))
       {
          double closeLots = NormalizeDouble(lots * T1_ClosePercent / 100.0, 2);
          if(closeLots < minLot) closeLots = minLot;
@@ -598,7 +861,7 @@ void ManageTargets()
       }
       
       // T2
-      if(pips >= T2_Pips && !TicketInArray(t2_tickets, ticket))
+      if(pips >= t2Thr && !TicketInArray(t2_tickets, ticket))
       {
          if(!posInfo.SelectByTicket(ticket)) continue;
          lots = posInfo.Volume();
@@ -616,7 +879,7 @@ void ManageTargets()
       }
       
       // T3
-      if(pips >= T3_Pips)
+      if(pips >= t3Thr)
       {
          trade.PositionClose(ticket);
          Print("T3 hit #", ticket, " FULL CLOSE");
@@ -1428,7 +1691,7 @@ void CreateDashboard()
 
    // Title row — orange square bullet like OFT
    ObjLabel(lbl+"bullet", "\x25A0", x, y+2, C'255,140,0', 10, true);
-   ObjLabel(lbl+"title",  " GaganEA v2.11", x+12, y+2, clrWhite, 9, true);
+   ObjLabel(lbl+"title",  " GaganEA v2.12", x+12, y+2, clrWhite, 9, true);
    ObjLine(lbl+"d0", x, y+18, 305);
    
    // --- Symbol / TF block ---

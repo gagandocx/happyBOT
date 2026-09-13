@@ -309,3 +309,137 @@ and robust out-of-sample, *not* raw headline return).
   the STRUCTURAL entry/exit work needed to lift PF above 1 — the tuner alone
   cannot do that.
 - **Report file:** reports/tuner/iterNNNN.html (per-iteration, going forward).
+
+---
+
+## Round 4 - Structural edge attempt (v2.12)  (pending next backtest)
+
+- **Hypothesis:** The numeric tuner (Round 3) can shrink the loss and hold DD but
+  it cannot make the edge positive: prior builds show a ~52% (near-random) win
+  rate with the average loss larger than the average winner and PF below 1. That
+  pattern says the ENTRY is low-conviction (the "pattern zoo" fires in chop) and
+  the EXIT geometry lets losers structurally exceed winners. Round 4 attacks both
+  halves structurally: (1) gate entries behind a real confluence filter so we
+  trade fewer, higher-quality setups, and (2) scale stops and targets to
+  volatility with a hard core target that enforces reward:risk >= ~1.5 so a
+  winner can, by construction, be larger than a loser. The conservative-DD
+  posture (Risk_Percent 1.0, concurrent cap, real protective stops) is kept.
+
+- **Change made (v2.11 -> v2.12; the 11 tuner-managed inputs are UNTOUCHED in
+  name/type/single-line form):**
+  - **Version:** header banner, `#property copyright`, `#property version`,
+    OnInit/OnDeinit prints, dashboard title, and `EA_Comment` default all bumped
+    to `2.12` / `"GaganEA v2.12"`.
+  - **ENTRY CONFLUENCE (new, master switch `Use_Confluence_Entry`):** the legacy
+    `htfBull && ctfBull && farEnough` trend gate is kept, but the pattern gate is
+    now replaced (or, with `Require_Pattern_Confirm`, supplemented) by:
+    - **ATR volatility-regime filter** (`Use_ATR_Regime_Filter`, `ATR_Min_Points`,
+      `ATR_Max_Points`): skip trading when ATR (converted to points via
+      `atr/_Point`) is below the floor (dead chop) or above the ceiling
+      (hostile spikes).
+    - **EMA pullback-and-resume trigger** (`Pullback_Lookback`): the most recent
+      closed bar (bar 1) must have closed back above the CTF EMA (the resume), AND
+      a bar in the window BEFORE it (bars 2..`Pullback_Lookback`) must have dipped
+      its low toward/below the CTF EMA (the fresh pullback). The pullback scan now
+      starts at bar 2 so the resume bar cannot double-count as its own pullback;
+      this keeps it a genuine fresh-pullback-then-resume filter (mirror for
+      shorts). This buys a resumption of trend after a pullback rather than
+      chasing extension.
+    - **RSI confirmation** (`RSI_Entry_Period`, `RSI_Buy_Max`, `RSI_Sell_Min`):
+      do not buy when entry RSI is overbought / do not sell when oversold. Uses a
+      NEW `RSI_Entry_Period` handle, distinct from the existing `RSI_Period` used
+      by the reversal exit.
+    - **Session/time filter** (`Use_Session_Filter`, `Session_Start_Hour`,
+      `Session_End_Hour`, `Skip_Rollover_Hour`, `Rollover_Hour`): only trade in
+      liquid server hours and skip the rollover hour.
+  - **EXIT / REWARD:RISK (new, master switch `Use_ATR_Dynamic_SLTP`, with
+    `ATR_SL_Mult`, `ATR_TP_Mult`):** when on and ATR is available, the protective
+    stop and a hard broker-side take-profit are scaled from ATR
+    (SL = price -/+ `ATR_SL_Mult`*ATR, TP = price +/- `ATR_TP_Mult`*ATR), giving a
+    core reward:risk of `ATR_TP_Mult/ATR_SL_Mult` (~1.67 at defaults). SL/TP are
+    NormalizeDouble'd and widened to `SYMBOL_TRADE_STOPS_LEVEL` if the broker min
+    is larger; the SL is clamped to the min FIRST and then the TP is re-derived
+    from the (possibly clamped) SL times `ATR_TP_Mult/ATR_SL_Mult`, so the R:R
+    ratio survives the low-ATR broker-stops clamp instead of collapsing toward 1.0.
+  - **ATR-SCALED TIERS (new, switch `Use_ATR_Scaled_Tiers`, with `ATR_T1_Mult`,
+    `ATR_T2_Mult`, `ATR_T3_Mult`):** the fixed `T1_Pips`/`T2_Pips`/`T3_Pips` tiers
+    (5/10/18 dollars on XAUUSD) sit ABOVE a typical ATR TP (~2.5*ATR = a few
+    dollars on M5 gold), so with the ATR path on, the broker-side hard TP would
+    fire before T2 could arm the after-T2 runner trail. That would kill the very
+    "protected runner" the round exists to test. Fix: when
+    `Use_ATR_Dynamic_SLTP && Use_ATR_Scaled_Tiers` and ATR is ready, `ManageTargets`
+    scales the tier thresholds off the SAME ATR as the SL/TP:
+    T1/T2/T3 = `ATR_Tx_Mult`*ATR/`_Point`. The default mults 0.8 < 1.5 < 2.2 all
+    sit below `ATR_TP_Mult` (2.5), so T1 and T2 bank and the after-T2 trail arms
+    INSIDE the hard TP, and T3 (2.2*ATR) can still full-close before the 2.5*ATR
+    TP with the trail already protecting the runner. This keeps the 11 tuner
+    inputs untouched (the fixed `Tx_Pips` remain the fallback when the ATR path or
+    `Use_ATR_Scaled_Tiers` is off, or when ATR is not ready) and is fully
+    reversible via the switch. The T1/T2/T3 partial-close mechanics are otherwise
+    UNCHANGED and stay layered underneath the ATR stop/target.
+  - **New handles:** `atr_handle` (iATR) and `rsi_entry_handle` (iRSI on the trade
+    timeframe) are created in OnInit (guarded vs INVALID_HANDLE) and released in
+    OnDeinit, following the existing handle pattern; every new CopyBuffer/CopyClose
+    /CopyHigh/CopyLow is guarded with a `< n` length check and a not-ready ATR (0)
+    means skip trading / fall back to the fixed stop.
+  - **Additive + reversible (corrected):** `Use_Confluence_Entry=false` restores
+    the legacy DetectBullishPattern/DetectBearishPattern entry gate, and
+    `Use_ATR_Dynamic_SLTP=false` restores the fixed `StopLoss_Pips` stop with tp=0
+    and the fixed `Tx_Pips` tiers. But the ATR-regime filter
+    (`Use_ATR_Regime_Filter`) and the session filter (`Use_Session_Filter`) are
+    INDEPENDENT switches that still default true and still gate entries, so those
+    two must ALSO be set false to reproduce prior-build behavior exactly. The
+    source banner is now worded to say exactly that (turn all four of
+    `Use_Confluence_Entry`, `Use_ATR_Dynamic_SLTP`, `Use_ATR_Regime_Filter`,
+    `Use_Session_Filter` off for legacy behavior) rather than the earlier,
+    inaccurate "both master switches off = exactly prior behavior" claim.
+
+- **Backtest config:**
+  - Symbol / timeframe: XAUUSD / M5
+  - Date range: pending the user's next MT5 run (validate on the full 6-month
+    window, not only the short tuning window)
+  - Deposit: 1000 USD
+  - Leverage: 1:500
+  - Broker: Fusion Markets
+  - Modelling: Every tick based on real ticks
+- **Key metrics:** pending next backtest. This round cannot be measured in the
+  authoring sandbox (no MT5, no MQL5 compiler); compile + backtest are validated
+  by the user's next Windows MT5 Strategy Tester run. No performance numbers are
+  claimed here.
+- **Intended effect (per mechanism, to be confirmed by backtest):**
+  - Confluence entry (regime + pullback-resume + RSI + session) -> fewer but
+    higher-quality entries -> win rate / PF up, less chop bleed.
+  - ATR-scaled SL/TP with a real core R:R >= 1.5 -> average winner can
+    structurally match or exceed the average loser.
+  - Regime + session filters -> avoid dead/illiquid/rollover conditions that
+    produced random-looking fills.
+  - DD stays conservative via the unchanged Risk_Percent, concurrent cap, and
+    real protective stops.
+- **What to watch next backtest:**
+  - Does PF cross 1.0 and does avg win / avg loss move to >= 1?
+  - Max relative drawdown stays under the 15% hard target.
+  - Trade count does NOT collapse to near-zero (if it does, `ATR_Min_Points` or
+    the session window may be too strict; loosen them or disable
+    `Require_Pattern_Confirm`).
+  - Whether, with the ATR path on, the ATR-scaled tiers bank (T1/T2 partials +
+    after-T2 trail) BEFORE the hard 2.5*ATR TP - i.e. the protected runner is
+    actually forming rather than the position closing flat at the hard TP.
+
+- **Review fixes (v2.12 semantic review, no re-backtest possible in sandbox):**
+  1. **Runner vs hard TP (blocking):** added `Use_ATR_Scaled_Tiers` +
+     `ATR_T1/T2/T3_Mult` so the tiers scale off ATR and sit inside the hard TP
+     when the ATR path is active (see ATR-SCALED TIERS above). Reversible via the
+     switch; the 11 tuner inputs are untouched.
+  2. **Reversibility wording:** corrected the source banner and this log so the
+     "legacy behavior" claim names all four switches, not just the two master
+     switches.
+  3. **R:R under stops clamp:** TP distance is now re-derived from the clamped SL
+     so R:R stays ~1.67 in low-ATR conditions instead of degrading toward 1.0.
+  4. **Pullback overlap:** the pullback scan now starts at bar 2 in both
+     BullPullbackResume and BearPullbackResume so the resume bar cannot double as
+     its own pullback (the guarded Copy count of `Pullback_Lookback + 2` still
+     covers the highest index read).
+- **Next step:** compile in MetaEditor, run the Strategy Tester on the full
+  window, analyze with `tools/analyze_report.py`, then let the Round 3 tuner grind
+  the 11 numeric inputs around this new structural base.
+- **Report file:** pending (reports/round04_YYYYMMDD.html once backtested).
