@@ -500,3 +500,44 @@ and robust out-of-sample, *not* raw headline return).
   reads the ranked results JSON, and iterates - validated PERIODICALLY on a real
   MT5 run of the same window before any candidate is trusted.
 - **Report file:** N/A this round (tooling + research rig; no MT5 backtest).
+
+---
+
+## Round 5 result + Round 6 tune (v2.13) - in-sandbox tick-data hunt (2026-09-13)
+
+- **What happened:** With the new Python backtester (Round 5) running on the
+  user's REAL XAUUSD tick data (~11.86M ticks, 2026.07.01-2026.09.01), I ran the
+  strategy hunt entirely in-sandbox - no MT5 round-trip.
+- **v2.12 baseline in the Python engine (full 2mo, bar mode):** net +163.81,
+  relDD 3.10%, PF 1.89, 70 trades, win 50%. (First profitable, sub-15%-DD read -
+  but ENGINE numbers, not MT5.)
+- **Hunt:** batched 15 variants, then refined the winner. Leaders were all
+  "more trades" variants (baseline's 70 trades was over-filtered) combined with a
+  wider ATR take-profit. Winner **combo_tp3.5**: net +326.28, relDD 3.75%,
+  PF 2.11, 109 trades (full window).
+- **Overfit / robustness check (the important part):** tested the top configs on
+  each month SEPARATELY.
+  - combo_tp3.5 July-only: net +169.78, PF 2.60, 42 trades.
+  - combo_tp3.5 August-only: net +138.32, PF 2.69, 34 trades.
+  - Profitable with PF > 2 and DD < 4% in BOTH independent halves, same ranking
+    order in both -> NOT a one-window spike. As robust as an in-sandbox 2-month
+    search can show (still only 2 months; regime coverage limited).
+- **Round 6 change (v2.13):** promoted the winning parameters to EA defaults
+  (v2.12 -> v2.13; the 11 tuner-managed inputs remain single-line/intact,
+  38 tuner tests pass). Exact changes vs v2.12:
+  - `Pullback_Lookback` 6 -> **10** (catch more valid pullback-resume setups)
+  - `RSI_Buy_Max` 68 -> **75**, `RSI_Sell_Min` 32 -> **25** (less restrictive
+    momentum gate)
+  - `Entry_Cooldown_Bars` 3 -> **1** (was over-throttling entries)
+  - `ATR_TP_Mult` 2.5 -> **3.5** (let winners run; PF rose ~1.9 -> ~2.1-2.7).
+    `ATR_T3_Mult` stays 2.2 (< 3.5, so the T3 tier still banks inside the hard TP).
+- **CRITICAL caveats (unchanged):** these are the PYTHON ENGINE's numbers, not
+  MT5. Commission is confirmed-exact from the user's real trade history
+  (6.00/lot round-turn); tick-value/contract multiplier and bar-mode intrabar
+  fills are approximations. Python = fast search; MT5 = source of truth. v2.13
+  MUST be validated on a real MT5 run of the same period before being trusted.
+- **Next step:** user runs v2.13 in MT5 (XAUUSD) and pushes the report; compare
+  the MT5 metrics against the Python engine's to calibrate parity (esp. the
+  tick-value multiplier). If MT5 confirms even roughly, we have the first
+  genuinely viable version; then continue hunting new structural ideas in-sandbox.
+- **Report file:** reports/pybt/*.results.json (in-sandbox); MT5 report pending.
