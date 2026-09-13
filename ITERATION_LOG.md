@@ -73,23 +73,39 @@ and robust out-of-sample, *not* raw headline return).
 
 ---
 
-## Round 1 — <baseline measurement>  (YYYY-MM-DD)
+## Round 1 — True v2.10 baseline  (2026-09-13)
 
-- **Hypothesis:** <e.g. establish the true v2.10 baseline metrics on XAUUSD M5>
-- **Change made:** <none / EA inputs adjusted>
+- **Hypothesis:** Establish the real, reproducible v2.10 baseline on a clean
+  real-tick run. (The original "$1000 -> $8970 / 797%" header was suspected to
+  be curve-fit / non-reproducible.)
+- **Change made:** **None** — stock GaganEA v2.10, default inputs
+  (Risk_Percent=6.0, StopLoss_Pips=2500, T1/T2/T3 800/1200/2000, all patterns on).
 - **Backtest config:**
-  - Symbol / timeframe: XAUUSD / M5
-  - Date range: <YYYY.MM.DD – YYYY.MM.DD>
-  - Deposit: <e.g. 10000 USD>
-  - Leverage: <e.g. 1:500>
-  - Broker: Fusion Markets
-  - Modelling: <e.g. Every tick based on real ticks>
+  - Symbol / timeframe: XAUUSD / M5 (tester Period M1)
+  - Date range: 2026.03.01 – 2026.09.11 (full ~6 months)
+  - Deposit: 1000 USD
+  - Leverage: 1:500
+  - Broker: Fusion Markets (Demo, Hedge)
+  - Modelling: Every tick based on real ticks (Model 4)
 - **Key metrics:**
-  - Net profit: <value>
-  - Max drawdown %: <value>
-  - Profit factor: <value>
-  - Win rate: <value>
-  - Total trades: <value>
-- **Diagnosis:** <verdict + notable flags from analyze_report.py>
-- **Next step:** <the single change to try next>
-- **Report file:** reports/round01_YYYYMMDD.html
+  - Net profit: **-387.57** (loses money)
+  - Max / Relative drawdown %: **41.09%** (target is < 15%)
+  - Profit factor: **0.62**
+  - Win rate: 52.27%
+  - Total trades: 2204
+  - Avg win / avg loss: +0.55 / -0.89 (reward:risk upside-down)
+  - Sharpe: -5.00 ; Recovery factor: -0.92
+- **Diagnosis:** VERDICT **NOT SUITABLE**. Negative net profit; 41% DD (serious,
+  way over the 15% goal); PF 0.62 (weak edge). The reported 797% does NOT
+  reproduce. Story from the data: overtrades (~100/day on M5 gold -> cost bleed),
+  winners smaller than losers, and 6% risk + position stacking drives the huge DD.
+- **Next step (Round 2):** Attack survival first — cut overtrading (stricter,
+  higher-quality entry filters), fix reward:risk (let winners run / tighten the
+  wide 2500-pt SL relative to targets), and cut Risk_Percent to slash DD. Aim:
+  profitable with DD < 15%, even if modest, before pushing return.
+- **Report file:** reports/round01_20260913.html
+
+> Iteration note: switching to direct-to-`main` commits (no per-round PRs) and
+> Windows Task Scheduler so the loop runs hands-off. Backtest window temporarily
+> shortened to the last ~1 month (2026.08.11–2026.09.11) for fast iteration;
+> restore the full 6-month window for robustness checks once a version looks good.
