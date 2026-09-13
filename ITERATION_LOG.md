@@ -221,3 +221,27 @@ and robust out-of-sample, *not* raw headline return).
   15% and the reward:risk has inverted in our favor. Then decide whether to
   loosen the (deliberately strict) entry filters to lift trade count/return.
 - **Report file:** pending next backtest.
+
+---
+
+## Round 2 result — v2.11 measured (2026-09-13)
+
+- **Backtest config:** XAUUSD, tester M1 / EA M5, 2026.08.11-2026.09.11 (~1 month,
+  shortened for fast iteration), 1000 USD, 1:500, Fusion Markets, real ticks.
+- **Key metrics (vs v2.10 baseline):**
+  - Net profit: **-268.92** (was -387.57) — ~30% less loss, still negative.
+  - Max/Relative drawdown: **28.36%** (was 41.09%) — big improvement, still > 15% target.
+  - Profit factor: **0.58** (was 0.62) — slightly worse.
+  - Win rate: 52.37% ; Total trades: **1012** (was 2204) — overtrading roughly halved.
+  - Avg win / loss: 0.70 / 1.23 ; Sharpe -5.00 ; Recovery -0.94.
+- **Diagnosis:** VERDICT NOT SUITABLE. Round 2 moved the right levers (DD 41->28%,
+  trades halved) but the strategy still LOSES money and PF < 1. Key insight: the
+  underlying EDGE is negative (PF 0.58) — risk sizing / distances alone cannot make
+  it profitable; that needs STRUCTURAL entry/exit changes. Parameter tuning can
+  minimize bleed and control DD but not manufacture an edge.
+- **Next step (Round 3+):** (a) Build an on-PC rule-based auto-tuner to continuously
+  grind parameters (risk, distances, SL/targets, cooldown) toward best risk-adjusted
+  score while keeping the best version — with the caveat it optimizes numbers, not
+  logic. (b) In parallel, structural work on entry/exit quality to push PF above 1.
+- **Report file:** reports/round01_20260913.html (overwrote; note: report filename
+  is fixed per run date — consider round-numbered filenames so history is retained).
