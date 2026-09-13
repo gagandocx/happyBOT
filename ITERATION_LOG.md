@@ -443,3 +443,60 @@ and robust out-of-sample, *not* raw headline return).
   window, analyze with `tools/analyze_report.py`, then let the Round 3 tuner grind
   the 11 numeric inputs around this new structural base.
 - **Report file:** pending (reports/round04_YYYYMMDD.html once backtested).
+
+---
+
+## Round 5 - In-sandbox Python research rig  (2026-09-13)
+
+- **Hypothesis:** The measure-and-iterate loop is bottlenecked by the MT5
+  round-trip (export ticks, run Strategy Tester on a Windows PC, export HTML,
+  analyze). If we can DEVELOP and RANK strategies entirely in the sandbox and
+  reserve MT5 for the final VALIDATION of a winner, iteration gets far faster and
+  can run autonomously - while MT5 stays the source of truth.
+- **Change made:** **No trading-logic change to GaganEA.mq5** (it is untouched).
+  Added `python_bt/`, a stdlib-only (no pip, no pandas/numpy) tick backtester:
+  - streaming tick loader + M5 bar aggregation (`loader.py`, `bars.py`);
+  - a fill/cost broker (buy at ask / sell at bid, SL/TP on quote cross, tiered
+    partials, breakeven, trailing, commission per lot per side) (`broker.py`);
+  - a faithful (NOT byte-exact) port of GaganEA v2.12's entry/exit core plus
+    EMA/ATR/RSI/H1-EMA indicators (`strategy/gagan.py`, `indicators.py`);
+  - metrics in the SAME schema as `tools/analyze_report.py` and ranking via the
+    SAME `automation/tuner/scoring.py::score()` (hard 15% relative-DD ceiling),
+    imported not reimplemented (`metrics.py`, `scoring_bridge.py`, `engine.py`);
+  - a runner CLI (`runner.py`) and a RESEARCH LOOP harness (`research.py`) that
+    runs many strategy/param configs on a shared slice, ranks them by score,
+    prints a leaderboard + per-config diagnosis, and persists a small results
+    JSON the agent reads back to form the next hypothesis;
+  - honest parity docs (`python_bt/README.md`) and a CSV regenerate helper
+    (`data/extract.py`, documented in `data/README.md`).
+- **Why:** unblocks fast, autonomous in-sandbox strategy iteration without a
+  Windows/MT5 round-trip. The agent can now DEVELOP -> MEASURE -> RANK ->
+  ITERATE in a tight loop and only escalate a promising candidate to MT5.
+- **Parity caveats (important):** parity vs MT5 is UNVERIFIABLE in the sandbox
+  (no MT5, no broker symbol spec). Point size, tick/contract value, and
+  commission are ASSUMPTIONS to confirm (see `python_bt/config.py` and
+  `python_bt/README.md`, each flagged CONFIRM). Bar mode checks SL/TP once per
+  bar (intrabar hits approximated); indicator seeding, H1 EMA construction,
+  swap, and margin/leverage are simplified or not modeled. The Python engine is
+  for FAST SEARCH; MT5 is the SOURCE OF TRUTH and every Python number is a
+  hypothesis to validate, not a result to report.
+- **Smoke test (UNVALIDATED small-slice, NOT a strategy result):** to prove the
+  pipeline runs end to end on the real extracted CSV, ran
+  `python3 -m python_bt.research --baseline --to 2026.07.20 --mode bar` over the
+  first ~19 days of the tick window (GaganStrategy defaults, bar mode). It
+  produced a leaderboard and a valid results JSON. The single populated row
+  showed 11 trades, net profit ~19, relative drawdown ~2.2%, profit factor
+  ~1.46, verdict "NEEDS IMPROVEMENT". These numbers are a plumbing SMOKE TEST on
+  a short slice with unconfirmed parity constants - they are NOT a validated
+  strategy result and must not be treated as performance. No full-window numbers
+  are claimed.
+- **Verification:** `py_compile` clean; the `python_bt` unittest suite is green
+  (includes a new test asserting the leaderboard ranks a higher-score config
+  first and an over-15%-DD config last); the existing `tools` (16) and tuner
+  (38) suites remain green; `GaganEA.mq5` is untouched; the 526 MB CSV and
+  reassembled archives stay gitignored.
+- **Next step / NEXT PHASE:** autonomous in-sandbox strategy iteration - the
+  agent proposes configs/new Strategy subclasses, runs `python_bt.research`,
+  reads the ranked results JSON, and iterates - validated PERIODICALLY on a real
+  MT5 run of the same window before any candidate is trusted.
+- **Report file:** N/A this round (tooling + research rig; no MT5 backtest).

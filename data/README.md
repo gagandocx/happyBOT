@@ -1,65 +1,82 @@
-# data/ — market data for the in-sandbox Python backtester
+# data/ - market data for the in-sandbox Python backtester
 
-This folder holds the XAUUSD historical data used by the (upcoming) Python
-research backtester so strategies can be developed and ranked entirely in the
-sandbox, without a round-trip to MT5.
+This folder holds the XAUUSD historical tick data used by the Python research
+backtester (`python_bt/`) so strategies can be developed and ranked entirely in
+the sandbox, without a round-trip to MT5.
 
-## Drop your split archive chunks here
+## What is tracked vs regenerated
 
 The full compressed tick CSV is too large to commit as one file (GitHub caps a
-single file at 100 MB). So it is committed as **split chunks** and reassembled
-on the sandbox side.
+single file at 100 MB), so it is committed as SPLIT CHUNKS and reassembled on
+demand. The chunks are tracked; the reassembled archive and the extracted CSV
+are gitignored and regenerated whenever needed.
 
-Put the chunk files in this folder and commit them, e.g.:
+Tracked in the repo:
 
 ```
-data/xauusd_ticks.zip.001
-data/xauusd_ticks.zip.002
-data/xauusd_ticks.zip.003
-data/xauusd_ticks.zip.004
+data/XAUUSD_202607011100_202609011203_2.zip.001
+data/XAUUSD_202607011100_202609011203_2.zip.002
+data/XAUUSD_202607011100_202609011203_2.zip.003
+data/XAUUSD_202607011100_202609011203_2.zip.004
+data/XAUUSD_202607011100_202609011203_2.zip.005
 ```
 
-(Names may differ depending on how you split — that is fine; just tell me the
-exact filenames and which tool you used.)
+Regenerated (gitignored, never committed):
 
-### IMPORTANT: keep each chunk UNDER ~90 MB
+```
+data/joined.bin                                              (reassembled outer zip)
+data/XAUUSD_202607011100_202609011203.zip                    (inner zip)
+data/XAUUSD_202607011100_202609011203/XAUUSD_202607011100_202609011203.csv   (526 MB CSV)
+```
 
-GitHub rejects any single file over 100 MB. When you split, choose a volume
-size around **20-50 MB** so every part commits cleanly with margin.
+## Canonical regenerate step: data/extract.py
 
-## How the chunks get reassembled (sandbox side, done by Kiro)
+Run this from the repo root to rebuild the CSV from the tracked chunks (stdlib
+only, no external tools needed):
 
-The reassembly command depends on HOW you split the file:
+```
+python3 data/extract.py
+```
 
-- **7-Zip "split to volumes" (`.7z.001/.002` or `.zip.001/.002`):** the parts
-  are a raw byte split. Reassemble by concatenating in order, then extract:
-  `cat data/*.001 data/*.002 ... > joined.zip` (or `copy /b` on Windows), then unzip.
-- **WinRAR multi-volume (`.part1.rar`, `.part2.rar`):** do NOT cat these; they
-  are a true multi-volume RAR — extract `part1` with `unrar`/7-Zip and it pulls
-  in the rest automatically.
-- **`split` / manual byte split:** `cat` the parts back in order.
+What it does:
 
-So when you commit the chunks, tell me:
-1. The exact filenames (a `dir data` listing).
-2. Which tool made them (7-Zip? WinRAR? something else?).
-3. The split/volume method (byte-split "volumes" vs multi-volume archive).
+1. Concatenates the five chunks `..._2.zip.001 .. .005` in numeric order into
+   `data/joined.bin` (a ZIP), streaming so it never loads the whole file into
+   memory.
+2. Extracts `joined.bin` to get the inner zip
+   `XAUUSD_202607011100_202609011203.zip`.
+3. Extracts the inner zip to produce
+   `data/XAUUSD_202607011100_202609011203/XAUUSD_202607011100_202609011203.csv`
+   (526 MB, about 11.86M data rows).
 
-That tells me the correct reassembly command so I don't corrupt the join.
+It is idempotent: if the CSV already exists and is non-empty it does nothing.
+Use `python3 data/extract.py --force` to re-extract, and `--data-dir DIR` to
+point at a different chunk directory.
 
-## Even simpler alternative: M1 bar CSV (recommended)
+## CSV format (verified)
 
-A month of XAUUSD **M1 bars is only a few MB** (vs the ~500 MB tick file /
-~89 MB compressed). It is small enough to commit as a single file, needs no
-splitting at all, and is plenty accurate to DEVELOP and RANK strategies. Real
-ticks are only needed later to VALIDATE the single winning strategy, and that
-validation runs on your own MT5 (which already has the ticks).
+Tab-separated with CRLF line endings. Header:
 
-To export M1 bars: MT5 -> press **F2** (History Center) -> **XAUUSD -> 1 Minute
-(M1)** -> **Export** -> save as `.csv` -> drop it here as e.g.
-`data/xauusd_m1.csv`.
+```
+<DATE>	<TIME>	<BID>	<ASK>	<LAST>	<VOLUME>	<FLAGS>
+```
 
-## After the data is in, paste the format
+Example row (LAST and VOLUME are often empty; TIME has millisecond precision):
 
-Whatever you send (ticks or M1 bars), also paste the **first ~5 lines** of the
-CSV so the loader can be written to match your exact column layout (MT5 export
-columns vary by build).
+```
+2026.07.01	11:00:00.051	3975.95	3976.00			6
+```
+
+DATE is YYYY.MM.DD, TIME is HH:MM:SS.mmm. Both BID and ASK are present on every
+tick, so the spread is real per tick. The window runs 2026.07.01 11:00 to
+2026.09.01 12:03.
+
+## Using the data
+
+Once extracted, `python_bt/loader.py` streams the CSV line by line (with date
+slicing and a tick cap), and the runner / research CLIs read it via
+`python_bt.runner.DEFAULT_DATA`. See `python_bt/README.md` for how to run a
+backtest and the research loop.
+
+Reminder: this Python backtester is for FAST SEARCH only. MT5 remains the source
+of truth; validate any promising candidate on a real MT5 run of the same period.
