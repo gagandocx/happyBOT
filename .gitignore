@@ -3,7 +3,15 @@ __pycache__/
 *.py[cod]
 
 # Generated analyzer output for real backtest reports.
-# The synthetic verification artifacts under reports/samples/ are intentionally
-# kept (they are negated below).
+# Ad-hoc / scratch summaries are ignored, but the per-round summaries the
+# automation harness commits (reports/roundNN_YYYYMMDD.summary.json) and the
+# synthetic verification artifacts under reports/samples/ are intentionally
+# kept (both are negated below). Keep the negations AFTER the ignore rule.
 reports/*.summary.json
+!reports/round*.summary.json
 !reports/samples/*.summary.json
+
+# Per-run logs and generated runtime tester .ini from the automation harness.
+# The harness scripts and the .ini TEMPLATE stay tracked; only the logs dir is
+# ignored.
+automation/logs/

@@ -26,6 +26,11 @@ The loop is human-in-the-loop:
    - **Expert:** `GaganEA`
    - **Symbol:** `XAUUSD`
    - **Period (timeframe):** `M5`
+     - > Note: the *automated* harness (`automation/`) instead uses the tester
+       > **Period `M1`** on purpose, for finer tick reconstruction, while the
+       > EA's own `Trade_Timeframe` input stays `M5`. The two are independent;
+       > see `automation/SETUP.md` §7 for why. For this manual path, `M5` is
+       > fine — just be aware the automated runs are recorded at `M1`.
    - **Date range**, **Deposit**, and **Leverage** as desired.
    - Modelling: **Every tick based on real ticks** is recommended for gold.
 3. Click **Start** and wait for the run to finish.
