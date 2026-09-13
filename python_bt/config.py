@@ -31,9 +31,11 @@ TICK_VALUE = 1.0
 CONTRACT_SIZE = 100
 
 # Commission charged per 1.0 lot per side (entry and exit each charged).
-# Fusion Markets is a commission broker; 3.5 USD/lot/side is a common default.
-# CONFIRM vs the user's actual Fusion commission tier.
-COMMISSION_PER_LOT_PER_SIDE = 3.5
+# CONFIRMED from the user's real Fusion Markets XAUUSD trade history: every fill
+# was charged exactly 6.00 USD per lot round-turn (0.01 lot -> 0.06, 0.10 -> 0.60,
+# 0.50 -> 3.00, 0.70 -> 4.20, 0.80 -> 4.80). Charging both sides means 3.00/side
+# so the round-turn is 6.00/lot, matching the statement.
+COMMISSION_PER_LOT_PER_SIDE = 3.0
 
 # Starting account balance in account currency (USD), to mirror the MT5 tests.
 # CONFIRM vs the deposit used in the user's MT5 backtests.
