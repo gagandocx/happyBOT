@@ -51,7 +51,7 @@ class RunnerTests(unittest.TestCase):
         buf = io.StringIO()
         with redirect_stdout(buf):
             rc = runner.main([
-                "--data", self.csv, "--strategy", "gagan",
+                "--data", self.csv, "--strategy", "happybot",
                 "--mode", "bar", "--max-ticks", "500",
             ])
         out = buf.getvalue()
@@ -65,7 +65,7 @@ class RunnerTests(unittest.TestCase):
         buf = io.StringIO()
         with redirect_stdout(buf):
             rc = runner.main([
-                "--data", self.csv, "--strategy", "gagan",
+                "--data", self.csv, "--strategy", "happybot",
                 "--mode", "bar", "--json", out_json,
             ])
         self.assertEqual(rc, 0)
@@ -74,7 +74,7 @@ class RunnerTests(unittest.TestCase):
         self.assertIn("metrics", result)
         self.assertIn("score", result)
         self.assertIn("diagnosis", result)
-        self.assertEqual(result["strategy"], "gagan")
+        self.assertEqual(result["strategy"], "happybot")
 
     def test_compare_two_param_sets(self):
         buf = io.StringIO()
@@ -111,7 +111,7 @@ class RunnerTests(unittest.TestCase):
         buf = io.StringIO()
         with redirect_stdout(buf):
             rc = runner.main([
-                "--data", self.csv, "--strategy", "gagan", "--mode", "bar",
+                "--data", self.csv, "--strategy", "happybot", "--mode", "bar",
             ])
         out = buf.getvalue()
         self.assertEqual(rc, 0)

@@ -47,7 +47,7 @@ from typing import Dict, List, Optional
 import python_bt.strategy  # noqa: F401
 from python_bt.runner import DEFAULT_DATA, run_once, _warmup_note
 from python_bt.strategy import get_strategy
-from python_bt.strategy.gagan import GaganStrategy
+from python_bt.strategy.happybot import HappyBotStrategy
 
 
 # Where results JSON are written. A dedicated subdir under reports/ that does
@@ -62,7 +62,7 @@ def _load_configs(raw: Optional[str]) -> List[Dict[str, object]]:
     """Parse a --configs argument: inline JSON or @file.json.
 
     Returns a list of {strategy, params, label} dicts. Each entry may omit
-    fields: strategy defaults to 'gagan', params to {}, label is synthesized.
+    fields: strategy defaults to 'happybot', params to {}, label is synthesized.
     """
     if not raw:
         return []
@@ -80,7 +80,7 @@ def _normalize_config(index: int, entry: Dict[str, object]) -> Dict[str, object]
     """Fill defaults and validate one config entry."""
     if not isinstance(entry, dict):
         raise ValueError("config entry #{} must be an object".format(index))
-    strategy = entry.get("strategy", "gagan")
+    strategy = entry.get("strategy", "happybot")
     params = entry.get("params", {}) or {}
     if not isinstance(params, dict):
         raise ValueError("config entry #{} 'params' must be an object".format(index))
@@ -91,20 +91,20 @@ def _normalize_config(index: int, entry: Dict[str, object]) -> Dict[str, object]
 def _default_configs() -> List[Dict[str, object]]:
     """A tiny built-in candidate set used when no --configs is supplied.
 
-    Kept intentionally small and centred on the GaganStrategy defaults with a
+    Kept intentionally small and centred on the HappyBotStrategy defaults with a
     couple of single-knob variations so a bare `python3 -m python_bt.research`
     run produces a meaningful multi-row leaderboard out of the box.
     """
     return [
-        {"strategy": "gagan", "params": {}, "label": "gagan-default"},
-        {"strategy": "gagan", "params": {"Risk_Percent": 0.5}, "label": "gagan-risk0.5"},
-        {"strategy": "gagan", "params": {"Risk_Percent": 2.0}, "label": "gagan-risk2.0"},
+        {"strategy": "happybot", "params": {}, "label": "happybot-default"},
+        {"strategy": "happybot", "params": {"Risk_Percent": 0.5}, "label": "happybot-risk0.5"},
+        {"strategy": "happybot", "params": {"Risk_Percent": 2.0}, "label": "happybot-risk2.0"},
     ]
 
 
 def _baseline_config() -> Dict[str, object]:
-    """The GaganStrategy defaults, always available as a comparison anchor."""
-    return {"strategy": GaganStrategy.NAME, "params": {}, "label": "baseline-gagan-default"}
+    """The HappyBotStrategy defaults, always available as a comparison anchor."""
+    return {"strategy": HappyBotStrategy.NAME, "params": {}, "label": "baseline-happybot-default"}
 
 
 def run_research(
@@ -231,7 +231,7 @@ def build_arg_parser() -> argparse.ArgumentParser:
     p.add_argument("--configs", default=None,
                    help="inline JSON or @file.json: list of {strategy, params, label}")
     p.add_argument("--baseline", action="store_true",
-                   help="always include GaganStrategy defaults as a comparison anchor")
+                   help="always include HappyBotStrategy defaults as a comparison anchor")
     p.add_argument("--from", dest="date_from", default=None, help="YYYY.MM.DD")
     p.add_argument("--to", dest="date_to", default=None, help="YYYY.MM.DD")
     p.add_argument("--mode", choices=("bar", "tick"), default="bar")

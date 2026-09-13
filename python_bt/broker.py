@@ -7,7 +7,7 @@ every side, partial closes with proportional P&L realization, SL/TP that fire
 when the quoted side crosses the level, SL modification (breakeven/trailing),
 and per-quote equity / drawdown tracking.
 
-Fill model (matches GaganEA / MT5 semantics documented in context.json):
+Fill model (matches HappyBot / MT5 semantics documented in context.json):
   * A BUY is opened at the ASK and later closed at the BID.
   * A SELL is opened at the BID and later closed at the ASK.
   * Commission is charged per lot per side, on OPEN and on each CLOSE (a partial

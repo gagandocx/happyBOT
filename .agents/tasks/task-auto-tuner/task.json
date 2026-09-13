@@ -1,0 +1,24 @@
+{
+  "task_id": "task-auto-tuner",
+  "task_description": "Build a continuous, on-PC, rule-based auto-tuner for GaganEA that closes the backtest loop with no human: after each MT5 backtest report it scores the result (maximize net profit subject to a hard 15% relative-drawdown ceiling), keeps the best param set found, adjusts EA input defaults in GaganEA.mq5 via a robust rewriter, and immediately starts another backtest, looping back-to-back until stopped. Includes a stdlib-only Python tuner (scoring, param space with ordering constraints, local-search + rule-based nudges, restart-safe JSON state, mq5 input rewriter) with unittest coverage, continuous PowerShell/BAT orchestration reusing the existing harness safeguards, per-iteration report history, a tuner README with honest overfitting/negative-edge caveats, and a Round 3 ITERATION_LOG entry. Stdlib only, pure ASCII, reuse tools/analyze_report.py for parsing. Cannot compile MQL5, run MT5, or execute PowerShell in-sandbox.",
+  "status": "completed",
+  "feature_order": ["FEAT-001", "FEAT-002", "FEAT-003"],
+  "blocked_reason": null,
+  "verification": {
+    "build": "pass",
+    "tests": "pass",
+    "test_quality": "pass",
+    "docker_build": "skipped",
+    "summary": "In-sandbox verification (no MQL5 compiler / MT5 / PowerShell / Windows here, so those are out of scope). python3 -m py_compile clean on all tuner .py + tests + analyze_report.py. Tests after review fixes: 38 tuner unittests (scoring/params/rewriter/state/delta-split) OK + 16 existing analyzer tests OK = 54 green, no regression. Test-quality: mutation checks confirmed tests are meaningful (breaking the DD>15% two-tier guarantee produced 5 scoring failures; reverting the delta-split classification failed the collision test). Tuner CLI dry-run ran end-to-end and wrote nothing under --dry-run. ASCII: grep -nP '[^\\x00-\\x7F]' over all new/changed .py/.ps1/.bat/.md/.json returned nothing. PowerShell brace/paren/bracket balance 220/220, 307/307, 36/36. GaganEA.mq5 left unchanged. No Dockerfile in this repo, so docker_build is skipped. NOT verifiable in-sandbox: MQL5 compile, MT5 Strategy Tester runs, PowerShell/BAT execution, and the live continuous loop (read-through only).",
+    "semantic_review": {
+      "passes": 3,
+      "final_verdict": "APPROVED",
+      "history": "v1 NEEDS_CHANGES (first-write StopLoss side-effect transparency, iteration-index reuse on tuner failure, PF-tiebreaker float-headroom test) -> fixed; v2 NEEDS_CHANGES (delta-split misclassified a nudge+repair collision as 'not a nudge'; classification untested) -> fixed with a three-way classify_changes + test_delta_split.py; v3 APPROVED. Only residual is the environmental caveat (PowerShell/loop unexecutable in this Linux sandbox), non-blocking and already documented.",
+      "review_files": [
+        ".agents/tasks/task-auto-tuner/2026-09-13-131052-review.md",
+        ".agents/tasks/task-auto-tuner/2026-09-13-132111-review.md",
+        ".agents/tasks/task-auto-tuner/2026-09-13-132852-review.md"
+      ]
+    }
+  }
+}

@@ -1,12 +1,12 @@
 <#
 ================================================================================
- GaganEA - CONTINUOUS auto-tuner loop  (run_tuner_loop.ps1)
+ HappyBot - CONTINUOUS auto-tuner loop  (run_tuner_loop.ps1)
 ================================================================================
  Runs, hands-off and BACK-TO-BACK (no sleep gap), the full tune-and-backtest
  loop on YOUR local Windows PC. Each iteration:
 
    (a) git pull --ff-only the repo
-   (b) copy GaganEA.mq5 into the MT5 MQL5\Experts folder. The params in the EA
+   (b) copy HappyBot.mq5 into the MT5 MQL5\Experts folder. The params in the EA
        were written by the PREVIOUS iteration's tuner call (or, on the very
        first iteration, they are the committed defaults).
    (c) compile it headlessly with metaeditor64.exe and PARSE the compile log
@@ -21,13 +21,13 @@
        the "ITERATION INDEXING" note below)
    (f) run tools\analyze_report.py on it to produce iterNNNN.summary.json
    (g) invoke the tuner: it ingests THIS result, updates state/best, and writes
-       the NEXT params into GaganEA.mq5 (ready for the next iteration's compile).
+       the NEXT params into HappyBot.mq5 (ready for the next iteration's compile).
        If the tuner exits non-zero the state counter is NOT bumped, so this
        cycle's report is renamed iterNNNN_notuned_<stamp> before commit so the
        next cycle's reused iter index cannot overwrite it (see step (g) body).
    (h) prune old full HTMLs beyond the retention cap (keep every .summary.json)
    (i) git add / commit / push the report + summary + tuner_state.json +
-       current_params.json + GaganEA.mq5, gracefully skipping when nothing
+       current_params.json + HappyBot.mq5, gracefully skipping when nothing
        changed
    then loop IMMEDIATELY (no Start-Sleep).
 
@@ -104,14 +104,14 @@ $Config = @{
     # --- Sub-path (inside MT5DataDir) to the Experts folder. Rarely changes. ---
     ExpertsSubDir   = 'MQL5\Experts'
 
-    # --- This git repo checkout on your PC (the folder containing GaganEA.mq5). ---
+    # --- This git repo checkout on your PC (the folder containing HappyBot.mq5). ---
     # NOTE: verify this matches where you cloned happyBOT on your PC and edit if not.
     RepoDir         = 'C:\Users\gagan\happyBOT'
 
     # --- Name the compiled EA will have inside MQL5\Experts (no extension). ---
-    # The script copies GaganEA.mq5 to <MT5DataDir>\<ExpertsSubDir>\<ExpertName>.mq5
-    # and the tester loads <ExpertName>. Keep this in sync with GaganEA.mq5.
-    ExpertName      = 'GaganEA'
+    # The script copies HappyBot.mq5 to <MT5DataDir>\<ExpertsSubDir>\<ExpertName>.mq5
+    # and the tester loads <ExpertName>. Keep this in sync with HappyBot.mq5.
+    ExpertName      = 'HappyBot'
 
     # --- Git branch to pull/commit/push. Match the branch you work on. ---
     GitBranch       = 'main'
@@ -293,7 +293,7 @@ function Resolve-Python {
     return $null
 }
 
-Write-Log ("=== GaganEA CONTINUOUS auto-tuner loop starting (MaxIterations={0}, TunerHtmlKeep={1}) ===" -f $MaxIterations, $TunerHtmlKeep) 'STEP'
+Write-Log ("=== HappyBot CONTINUOUS auto-tuner loop starting (MaxIterations={0}, TunerHtmlKeep={1}) ===" -f $MaxIterations, $TunerHtmlKeep) 'STEP'
 Write-Log ("Log file: {0}" -f $LogFile)
 Write-Log "Stop with: close the window, Ctrl+C, or end the scheduled task."
 
@@ -332,7 +332,7 @@ try {
 # ==============================================================================
 # ==============================  THE CONTINUOUS LOOP  =========================
 # ==============================================================================
-$ExpertMq5InRepo = Join-Path $Config.RepoDir 'GaganEA.mq5'
+$ExpertMq5InRepo = Join-Path $Config.RepoDir 'HappyBot.mq5'
 $ExpertMq5InMt5  = Join-Path $ExpertsDir ("{0}.mq5" -f $Config.ExpertName)
 $LoopCount = 0
 
@@ -375,12 +375,12 @@ while ($true) {
 
         # ----------------------------------------------------------------------
         # STEP (b) - copy the EA source into MT5's MQL5\Experts
-        # The params in GaganEA.mq5 were written by the PREVIOUS cycle's tuner
+        # The params in HappyBot.mq5 were written by the PREVIOUS cycle's tuner
         # (or are the committed defaults on the first cycle).
         # ----------------------------------------------------------------------
         Write-Log "STEP (b) copy EA into MT5 Experts folder" 'STEP'
         if (-not (Test-Path -LiteralPath $ExpertMq5InRepo)) {
-            Write-Log ("GaganEA.mq5 not found in repo: {0}; skipping this cycle." -f $ExpertMq5InRepo) 'WARN'
+            Write-Log ("HappyBot.mq5 not found in repo: {0}; skipping this cycle." -f $ExpertMq5InRepo) 'WARN'
             continue
         }
         Copy-Item -LiteralPath $ExpertMq5InRepo -Destination $ExpertMq5InMt5 -Force
@@ -559,7 +559,7 @@ while ($true) {
 
         # ----------------------------------------------------------------------
         # STEP (g) - invoke the tuner: ingest THIS result, update state/best,
-        # and write the NEXT params into GaganEA.mq5 (ready for next compile).
+        # and write the NEXT params into HappyBot.mq5 (ready for next compile).
         # ----------------------------------------------------------------------
         Write-Log "STEP (g) invoke the auto-tuner" 'STEP'
         Push-Location -LiteralPath $Config.RepoDir
@@ -605,7 +605,7 @@ while ($true) {
                 Write-Log ("could not rename tuner-failed report (committing under original name; it MAY be overwritten next cycle): {0}" -f $_.Exception.Message) 'WARN'
             }
         } else {
-            Write-Log "tuner OK: ingested result, updated state, wrote next params into GaganEA.mq5."
+            Write-Log "tuner OK: ingested result, updated state, wrote next params into HappyBot.mq5."
         }
 
         # ----------------------------------------------------------------------
@@ -643,7 +643,7 @@ while ($true) {
         # ----------------------------------------------------------------------
         # STEP (i) - git add / commit / push this cycle's artifacts.
         # Staged set: the iter HTML + its summary + tuner_state.json +
-        # current_params.json + GaganEA.mq5 (plus any HTML git-rm'd above).
+        # current_params.json + HappyBot.mq5 (plus any HTML git-rm'd above).
         # ----------------------------------------------------------------------
         Write-Log "STEP (i) git add / commit / push" 'STEP'
         Push-Location -LiteralPath $Config.RepoDir
@@ -656,7 +656,7 @@ while ($true) {
                 $CommitSummaryRel,
                 "automation/tuner/tuner_state.json",
                 "automation/tuner/current_params.json",
-                "GaganEA.mq5"
+                "HappyBot.mq5"
             )
             $addOk = $true
             foreach ($t in $addTargets) {

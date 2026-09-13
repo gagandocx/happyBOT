@@ -20,7 +20,7 @@ Indicators provided:
   * H1Ema  - an EMA fed by HOURLY closes derived from the M5 stream. It watches
              the bar timestamp's hour; when the hour rolls over it feeds the
              previous hour's last M5 close into an inner EMA. This is the HTF
-             EMA200 approximation (see gagan.py docstring for caveats).
+             EMA200 approximation (see happybot.py docstring for caveats).
 
 APPROXIMATIONS vs MT5 (documented so parity work is honest):
   * MT5 EMA/ATR/RSI are computed on completed broker bars. Here the M5 bars are

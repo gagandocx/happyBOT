@@ -1,21 +1,21 @@
 [
-  {"strategy": "gagan", "label": "v2.12_baseline", "params": {}},
+  {"strategy": "happybot", "label": "v2.12_baseline", "params": {}},
 
-  {"strategy": "gagan", "label": "rr_wider_tp3.0", "params": {"ATR_TP_Mult": 3.0}},
-  {"strategy": "gagan", "label": "rr_wider_tp3.5", "params": {"ATR_TP_Mult": 3.5}},
-  {"strategy": "gagan", "label": "rr_tighter_sl1.2", "params": {"ATR_SL_Mult": 1.2}},
-  {"strategy": "gagan", "label": "rr_sl1.2_tp3.0", "params": {"ATR_SL_Mult": 1.2, "ATR_TP_Mult": 3.0}},
+  {"strategy": "happybot", "label": "rr_wider_tp3.0", "params": {"ATR_TP_Mult": 3.0}},
+  {"strategy": "happybot", "label": "rr_wider_tp3.5", "params": {"ATR_TP_Mult": 3.5}},
+  {"strategy": "happybot", "label": "rr_tighter_sl1.2", "params": {"ATR_SL_Mult": 1.2}},
+  {"strategy": "happybot", "label": "rr_sl1.2_tp3.0", "params": {"ATR_SL_Mult": 1.2, "ATR_TP_Mult": 3.0}},
 
-  {"strategy": "gagan", "label": "more_trades_pb10", "params": {"Pullback_Lookback": 10}},
-  {"strategy": "gagan", "label": "more_trades_rsi75", "params": {"RSI_Buy_Max": 75.0, "RSI_Sell_Min": 25.0}},
-  {"strategy": "gagan", "label": "more_trades_session24", "params": {"Use_Session_Filter": false}},
-  {"strategy": "gagan", "label": "more_trades_cool1", "params": {"Entry_Cooldown_Bars": 1}},
-  {"strategy": "gagan", "label": "more_trades_combo", "params": {"Pullback_Lookback": 10, "RSI_Buy_Max": 75.0, "RSI_Sell_Min": 25.0, "Entry_Cooldown_Bars": 1}},
+  {"strategy": "happybot", "label": "more_trades_pb10", "params": {"Pullback_Lookback": 10}},
+  {"strategy": "happybot", "label": "more_trades_rsi75", "params": {"RSI_Buy_Max": 75.0, "RSI_Sell_Min": 25.0}},
+  {"strategy": "happybot", "label": "more_trades_session24", "params": {"Use_Session_Filter": false}},
+  {"strategy": "happybot", "label": "more_trades_cool1", "params": {"Entry_Cooldown_Bars": 1}},
+  {"strategy": "happybot", "label": "more_trades_combo", "params": {"Pullback_Lookback": 10, "RSI_Buy_Max": 75.0, "RSI_Sell_Min": 25.0, "Entry_Cooldown_Bars": 1}},
 
-  {"strategy": "gagan", "label": "risk1.5", "params": {"Risk_Percent": 1.5}},
-  {"strategy": "gagan", "label": "risk2.0", "params": {"Risk_Percent": 2.0}},
+  {"strategy": "happybot", "label": "risk1.5", "params": {"Risk_Percent": 1.5}},
+  {"strategy": "happybot", "label": "risk2.0", "params": {"Risk_Percent": 2.0}},
 
-  {"strategy": "gagan", "label": "regime_wider", "params": {"ATR_Min_Points": 80.0}},
-  {"strategy": "gagan", "label": "tiers_runner", "params": {"ATR_T1_Mult": 1.0, "ATR_T2_Mult": 1.8, "ATR_T3_Mult": 2.6, "ATR_TP_Mult": 3.0}},
-  {"strategy": "gagan", "label": "concurrent3", "params": {"Max_Concurrent_Positions": 3}}
+  {"strategy": "happybot", "label": "regime_wider", "params": {"ATR_Min_Points": 80.0}},
+  {"strategy": "happybot", "label": "tiers_runner", "params": {"ATR_T1_Mult": 1.0, "ATR_T2_Mult": 1.8, "ATR_T3_Mult": 2.6, "ATR_TP_Mult": 3.0}},
+  {"strategy": "happybot", "label": "concurrent3", "params": {"Max_Concurrent_Positions": 3}}
 ]

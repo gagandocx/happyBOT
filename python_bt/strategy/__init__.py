@@ -30,6 +30,6 @@ from python_bt.strategy.base import (  # noqa: F401
 )
 
 # Import bundled strategies so they self-register on `import python_bt.strategy`.
-from python_bt.strategy import gagan  # noqa: F401,E402
+from python_bt.strategy import happybot  # noqa: F401,E402
 
 __all__ = ["Strategy", "register", "get_strategy", "STRATEGY_REGISTRY"]

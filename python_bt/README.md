@@ -11,7 +11,7 @@ It is a FAST SEARCH rig, not a verdict machine. MT5 is the SOURCE OF TRUTH. Any
 config or strategy that looks good here MUST be validated on a real MT5 run of
 the same period before it is trusted. See section 7.
 
-The live trading artifact is `GaganEA.mq5` at the repo root; this Python code is
+The live trading artifact is `HappyBot.mq5` at the repo root; this Python code is
 a faithful (not byte-exact) port of its core plus a research harness around it.
 
 ## 2. Layout
@@ -42,8 +42,8 @@ Every module and its role:
   state used by the strategy.
 - `python_bt/strategy/base.py` - `Strategy` base class, `STRATEGY_REGISTRY`,
   `@register`, `get_strategy(name)`.
-- `python_bt/strategy/gagan.py` - `GaganStrategy` (NAME `gagan`); the faithful
-  port of GaganEA v2.12's entry/exit core.
+- `python_bt/strategy/happybot.py` - `HappyBotStrategy` (NAME `happybot`); the faithful
+  port of HappyBot v2.12's entry/exit core.
 - `python_bt/runner.py` - the runner CLI: run one strategy/param set (or A/B
   `--compare` two), print metrics + score + diagnosis, optionally write JSON.
   Exposes `run_once(...)`, reused by the research harness.
@@ -68,7 +68,7 @@ This writes `data/XAUUSD_202607011100_202609011203/XAUUSD_202607011100_202609011
 ### Run one strategy (runner CLI)
 
 ```
-python3 -m python_bt.runner --strategy gagan --to 2026.07.20 --mode bar
+python3 -m python_bt.runner --strategy happybot --to 2026.07.20 --mode bar
 python3 -m python_bt.runner --params '{"Risk_Percent":0.5}' --json out.json
 python3 -m python_bt.runner --compare --params '{}' --params '{"Risk_Percent":2.0}' --to 2026.07.20
 ```
@@ -91,10 +91,10 @@ python3 -m python_bt.research --configs @candidates.json --max-ticks 200000
 ```
 
 - `--configs @file.json` takes a JSON list of `{strategy, params, label}`
-  objects. Fields may be omitted: `strategy` defaults to `gagan`, `params` to
+  objects. Fields may be omitted: `strategy` defaults to `happybot`, `params` to
   `{}`, and `label` is synthesized. With no `--configs`, a small built-in set
-  (gagan defaults plus two risk variations) runs.
-- `--baseline` always prepends the `GaganStrategy` defaults as a comparison
+  (happybot defaults plus two risk variations) runs.
+- `--baseline` always prepends the `HappyBotStrategy` defaults as a comparison
   anchor.
 - `--top N` shows only the best N rows in the printed leaderboard (the full set
   is still persisted).
@@ -105,9 +105,9 @@ Example `candidates.json`:
 
 ```json
 [
-  {"strategy": "gagan", "params": {}, "label": "baseline"},
-  {"strategy": "gagan", "params": {"Risk_Percent": 0.5}, "label": "risk-half"},
-  {"strategy": "gagan", "params": {"Min_EMA_Distance": 300}, "label": "wider-ema-gate"}
+  {"strategy": "happybot", "params": {}, "label": "baseline"},
+  {"strategy": "happybot", "params": {"Risk_Percent": 0.5}, "label": "risk-half"},
+  {"strategy": "happybot", "params": {"Min_EMA_Distance": 300}, "label": "wider-ema-gate"}
 ]
 ```
 

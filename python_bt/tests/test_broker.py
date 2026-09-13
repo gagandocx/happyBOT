@@ -17,14 +17,36 @@ _REPO_ROOT = os.path.dirname(os.path.dirname(_HERE))
 if _REPO_ROOT not in sys.path:
     sys.path.insert(0, _REPO_ROOT)
 
+from python_bt import config  # noqa: E402
 from python_bt.broker import Broker  # noqa: E402
+
+# These tests were authored with hand-computed P&L assuming a commission of
+# 3.5 per lot per side (see the module docstring arithmetic). The live config
+# constant was later calibrated to the user's real Fusion Markets statement
+# (3.0/side = 6.00/lot round-turn). To keep this suite's hand-computed numbers
+# valid and INDEPENDENT of future config recalibration, pin the commission the
+# fixtures assume for the duration of each test and restore it afterwards.
+_TEST_COMMISSION_PER_LOT_PER_SIDE = 3.5
 
 
 def _ts(sec=0):
     return datetime(2026, 7, 1, 11, 0, sec)
 
 
-class OpenCloseTests(unittest.TestCase):
+class _PinnedCommission(unittest.TestCase):
+    """Base: pin config.COMMISSION_PER_LOT_PER_SIDE to the value the fixtures
+    were computed against, then restore it, so the suite is deterministic
+    regardless of the live (broker-calibrated) constant."""
+
+    def setUp(self):
+        self._saved_comm = config.COMMISSION_PER_LOT_PER_SIDE
+        config.COMMISSION_PER_LOT_PER_SIDE = _TEST_COMMISSION_PER_LOT_PER_SIDE
+
+    def tearDown(self):
+        config.COMMISSION_PER_LOT_PER_SIDE = self._saved_comm
+
+
+class OpenCloseTests(_PinnedCommission):
     def test_buy_fills_at_ask_commission_on_open_and_close(self):
         b = Broker(deposit=1000.0)
         # Open 1.0 lot buy at ask=100.00; open commission 3.5.
@@ -52,7 +74,7 @@ class OpenCloseTests(unittest.TestCase):
         self.assertAlmostEqual(deal.profit, 50.0 - 3.5)
 
 
-class StopTargetTests(unittest.TestCase):
+class StopTargetTests(_PinnedCommission):
     def test_buy_hits_tp_closes_at_tp(self):
         b = Broker(deposit=1000.0)
         pos = b.open("buy", 1.0, price_bid=99.99, price_ask=100.00, sl=99.00, tp=101.00, ts=_ts())
@@ -91,7 +113,7 @@ class StopTargetTests(unittest.TestCase):
         self.assertAlmostEqual(fired2[0].profit, 100.0 - 3.5)
 
 
-class PartialCloseTests(unittest.TestCase):
+class PartialCloseTests(_PinnedCommission):
     def test_partial_then_second_partial_then_full(self):
         b = Broker(deposit=1000.0)
         # Open 1.0 lot buy at ask=100.00. open comm 3.5.
@@ -127,7 +149,7 @@ class PartialCloseTests(unittest.TestCase):
         self.assertEqual(len(b.positions), 0)
 
 
-class HedgingTests(unittest.TestCase):
+class HedgingTests(_PinnedCommission):
     def test_buy_and_sell_open_simultaneously(self):
         b = Broker(deposit=1000.0)
         buy = b.open("buy", 1.0, price_bid=99.99, price_ask=100.00, sl=90.0, tp=110.0, ts=_ts())
@@ -142,7 +164,7 @@ class HedgingTests(unittest.TestCase):
         self.assertAlmostEqual(b.floating_pnl(100.20, 100.21), 20.0 - 21.0)
 
 
-class ModifySlTests(unittest.TestCase):
+class ModifySlTests(_PinnedCommission):
     def test_modify_sl_to_breakeven_then_fires(self):
         b = Broker(deposit=1000.0)
         pos = b.open("buy", 1.0, price_bid=99.99, price_ask=100.00, sl=99.00, tp=105.00, ts=_ts())
@@ -155,7 +177,7 @@ class ModifySlTests(unittest.TestCase):
         self.assertAlmostEqual(fired[0].profit, 0.0 - 3.5)
 
 
-class DrawdownTests(unittest.TestCase):
+class DrawdownTests(_PinnedCommission):
     def test_scripted_peak_to_trough_drawdown(self):
         # Deposit 1000. Open 1.0 lot buy at ask=100.00 (balance 996.5 after comm).
         b = Broker(deposit=1000.0)

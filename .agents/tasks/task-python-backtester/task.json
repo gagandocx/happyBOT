@@ -1,0 +1,15 @@
+{
+  "task_id": "task-python-backtester",
+  "task_description": "Build an in-sandbox, stdlib-only Python tick backtester for XAUUSD so GaganEA-style strategies can be developed, backtested, and ranked entirely in the sandbox (no MT5 round-trip), enabling a fast develop->measure->rank->iterate loop the agent participates in directly. Deliverables: reproducible data-extract helper (regenerates the gitignored 526MB tick CSV from tracked split chunks), streaming tick loader + M5 bar aggregator, a backtest engine + broker/position model (spread fills, commission, SL/TP, partial closes, trailing, hedging, drawdown) with metrics consistent with tools/analyze_report.py and ranking via automation/tuner/scoring.py, a faithful pluggable port of GaganEA v2.12, a runner CLI, a research-loop harness, honest parity documentation, tests, and a Round 5 ITERATION_LOG.md entry. STDLIB ONLY (INTEGRATIONS_ONLY network, no pip), pure ASCII, do NOT modify GaganEA.mq5, do NOT commit big data files, do NOT commit or push.",
+  "status": "completed",
+  "feature_order": ["FEAT-001", "FEAT-002", "FEAT-003", "FEAT-004"],
+  "blocked_reason": null,
+  "verification": {
+    "build": "pass",
+    "tests": "pass",
+    "test_quality": "pass",
+    "docker_build": "skipped",
+    "review": "Semantic review v1 APPROVED (2026-09-13-165511-review.md) with 4 non-blocking issues. Review-fix pass addressed them: (1) FIXED --to YYYY.MM.DD end-day truncation in loader.py (bare-date date_to now inclusive of the whole day; verified 159316 ticks for 2026.07.01 vs 0 before); (2/4) config parity constants + bar-mode intrabar fill approximation left as documented CONFIRM assumptions (no code change, accepted); (3) FIXED warm-up-vs-flat ambiguity via Strategy.warmup_info() surfaced in runner/research so zero-trade short slices show 'insufficient warm-up' instead of a misleading flat verdict.",
+    "summary": "py_compile clean on all python_bt modules + data/extract.py. Test suites all green after review fixes: python_bt 77, tools 16, tuner 38. data/extract.py regenerates the 526MB CSV (11,861,292 rows) from ONLY the tracked split chunks via stdlib zipfile. Research loop + runner run end-to-end on a real ~19-day slice (small-slice smoke test, NOT a validated result). Pure ASCII across all new/changed files incl. the Round 5 log section. GaganEA.mq5 untouched; no big data files staged. Test quality confirmed: broker/metrics tests exercise real code paths with hand-computed expected P&L (e.g. buy TP profit = price move minus commission, partial-close proportional P&L, SL/TP fills), and score() tier-separation is asserted; tests would fail if the implementation were reverted. Docker not applicable (no Dockerfile; INTEGRATIONS_ONLY network). NOT verifiable in-sandbox: parity vs MT5 (no MT5/compiler) - config constants (point size, tick/contract value, commission) are documented assumptions flagged for the user to confirm; Python is fast-search, MT5 is source of truth."
+  }
+}

@@ -1,5 +1,5 @@
 //+------------------------------------------------------------------+
-//|                                        GaganEA v2.13 |
+//|                                        HappyBot v2.13 |
 //|                           Reconstructed from UI + Backtest Data  |
 //|                                                                  |
 //| ROUND 4 STRUCTURAL EDGE ATTEMPT (v2.12):                         |
@@ -23,7 +23,7 @@
 //|  active, since those are independent filters).                   |
 //|  See ITERATION_LOG.md Round 4 for the exact changes.             |
 //+------------------------------------------------------------------+
-#property copyright "GaganEA v2.13"
+#property copyright "HappyBot v2.13"
 #property version   "2.13"
 #property strict
 
@@ -199,7 +199,7 @@ input int             Dashboard_Y        = 30;
 input int             Magic_Number       = 202400;
 input int             Max_Slippage       = 10;
 input int             Max_Spread_Pips    = 50;
-input string          EA_Comment         = "GaganEA v2.13";
+input string          EA_Comment         = "HappyBot v2.13";
 
 //+------------------------------------------------------------------+
 //| GLOBAL VARIABLES                                                  |
@@ -349,7 +349,7 @@ int OnInit()
    
    if(Show_Dashboard) CreateDashboard();
    
-   Print("GaganEA v2.13 initialized on ", _Symbol, " TF:", EnumToString(Trade_Timeframe));
+   Print("HappyBot v2.13 initialized on ", _Symbol, " TF:", EnumToString(Trade_Timeframe));
    return INIT_SUCCEEDED;
 }
 
@@ -374,7 +374,7 @@ void OnDeinit(const int reason)
    if(rsi_entry_handle != INVALID_HANDLE) IndicatorRelease(rsi_entry_handle);
    
    DeleteDashboard();
-   Print("GaganEA v2.13 removed. Reason: ", reason);
+   Print("HappyBot v2.13 removed. Reason: ", reason);
 }
 
 //+------------------------------------------------------------------+
@@ -1691,7 +1691,7 @@ void CreateDashboard()
 
    // Title row — orange square bullet like OFT
    ObjLabel(lbl+"bullet", "\x25A0", x, y+2, C'255,140,0', 10, true);
-   ObjLabel(lbl+"title",  " GaganEA v2.13", x+12, y+2, clrWhite, 9, true);
+   ObjLabel(lbl+"title",  " HappyBot v2.13", x+12, y+2, clrWhite, 9, true);
    ObjLine(lbl+"d0", x, y+18, 305);
    
    // --- Symbol / TF block ---

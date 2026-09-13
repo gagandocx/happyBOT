@@ -8,7 +8,7 @@ Flow per invocation:
   3. Propose the NEXT param vector via coordinate-descent local search plus a
      rule-based nudge layer keyed off the diagnosis (high DD, overtrading, PF<1).
   4. Validate the proposal through params.py.
-  5. Write it into GaganEA.mq5 (unless --dry-run), write a human-readable log
+  5. Write it into HappyBot.mq5 (unless --dry-run), write a human-readable log
      line, and update automation/tuner/current_params.json.
 
 Exit code is non-zero only on real errors. A 'nothing changed' proposal logs
@@ -60,7 +60,7 @@ def _default_current_params_path():
 
 
 def _default_mq5_path():
-    return os.path.join(_repo_root(), "GaganEA.mq5")
+    return os.path.join(_repo_root(), "HappyBot.mq5")
 
 
 def _default_log_dir():
@@ -308,11 +308,11 @@ def write_current_params(path, vector, dry_run=False):
 # Main ---------------------------------------------------------------------
 
 def build_arg_parser():
-    p = argparse.ArgumentParser(description="GaganEA auto-tuner (one iteration).")
+    p = argparse.ArgumentParser(description="HappyBot auto-tuner (one iteration).")
     p.add_argument("--summary-json", default=None, help="Path to a .summary.json to ingest.")
     p.add_argument("--report", default=None, help="Path to a raw report .html to parse.")
     p.add_argument("--state", default=None, help="Path to tuner_state.json.")
-    p.add_argument("--mq5", default=None, help="Path to GaganEA.mq5.")
+    p.add_argument("--mq5", default=None, help="Path to HappyBot.mq5.")
     p.add_argument("--dry-run", action="store_true", help="Compute and log but do not write mq5/state.")
     p.add_argument("--reset", action="store_true", help="Reinitialize state from current mq5 and exit.")
     return p
@@ -414,7 +414,7 @@ def run(argv=None):
         write_log_line(log_dir, log_line + " (no param change)", dry_run=args.dry_run)
         return 0
 
-    # Write proposal into GaganEA.mq5 and persist state.
+    # Write proposal into HappyBot.mq5 and persist state.
     if not args.dry_run:
         try:
             mq5_rewriter.rewrite_file(mq5_path, proposed)

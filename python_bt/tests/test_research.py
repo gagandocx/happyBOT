@@ -35,7 +35,7 @@ def _row(label, net_profit, dd_pct, pf=1.5, trades=50):
     }
     return {
         "label": label,
-        "strategy": "gagan",
+        "strategy": "happybot",
         "params": {},
         "metrics": metrics,
         "score": score(metrics),
@@ -80,25 +80,25 @@ class RankResultsTests(unittest.TestCase):
 
 class LoadConfigsTests(unittest.TestCase):
     def test_inline_json_normalizes_defaults(self):
-        cfgs = research._load_configs('[{"strategy": "gagan"}, {"label": "x"}]')
-        self.assertEqual(cfgs[0]["strategy"], "gagan")
+        cfgs = research._load_configs('[{"strategy": "happybot"}, {"label": "x"}]')
+        self.assertEqual(cfgs[0]["strategy"], "happybot")
         self.assertEqual(cfgs[0]["params"], {})
         self.assertTrue(cfgs[0]["label"])  # synthesized
-        self.assertEqual(cfgs[1]["strategy"], "gagan")  # default strategy
+        self.assertEqual(cfgs[1]["strategy"], "happybot")  # default strategy
         self.assertEqual(cfgs[1]["label"], "x")
 
     def test_at_file(self):
         tmp = tempfile.mkdtemp()
         path = os.path.join(tmp, "c.json")
         with open(path, "w") as fh:
-            json.dump([{"strategy": "gagan", "params": {"Risk_Percent": 0.5}, "label": "r05"}], fh)
+            json.dump([{"strategy": "happybot", "params": {"Risk_Percent": 0.5}, "label": "r05"}], fh)
         cfgs = research._load_configs("@" + path)
         self.assertEqual(cfgs[0]["label"], "r05")
         self.assertEqual(cfgs[0]["params"]["Risk_Percent"], 0.5)
 
     def test_non_list_rejected(self):
         with self.assertRaises(ValueError):
-            research._load_configs('{"strategy": "gagan"}')
+            research._load_configs('{"strategy": "happybot"}')
 
     def test_empty_returns_empty(self):
         self.assertEqual(research._load_configs(None), [])
@@ -163,8 +163,8 @@ class EndToEndTests(unittest.TestCase):
 
     def test_run_research_returns_ranked_rows(self):
         configs = [
-            {"strategy": "gagan", "params": {}, "label": "a"},
-            {"strategy": "gagan", "params": {"Risk_Percent": 0.5}, "label": "b"},
+            {"strategy": "happybot", "params": {}, "label": "a"},
+            {"strategy": "happybot", "params": {"Risk_Percent": 0.5}, "label": "b"},
         ]
         rows = research.run_research(configs, self.csv, mode="bar", max_ticks=500)
         self.assertEqual(len(rows), 2)

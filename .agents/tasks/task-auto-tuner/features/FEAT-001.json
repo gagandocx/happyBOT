@@ -1,0 +1,39 @@
+{
+  "id": "FEAT-001",
+  "type": "chore",
+  "description": "Establish and confirm the in-sandbox baseline before adding anything. Verify Python tooling is healthy so later features build on a known-green state. This is fast and non-destructive.",
+  "status": "completed",
+  "steps": [
+    "From repo root /projects/sandbox/happyBOT, run `python3 --version` and record it.",
+    "Run `python3 -m py_compile tools/analyze_report.py tools/test_analyze_report.py` and confirm no errors.",
+    "Run the existing analyzer test suite: `python3 -m unittest -v tools.test_analyze_report` (or `python3 -m unittest discover -s tools -p 'test_*.py'`) from repo root; confirm all 16 tests pass. Record the exact command that works.",
+    "Confirm the analyzer's public API by reading tools/analyze_report.py: note that analyze_file(path, json_dir=None, write_json=True) returns a summary dict with summary['metrics'] and summary['diagnosis'], and writes <basename>.summary.json. Confirm metric keys available (total_net_profit, profit_factor, relative_drawdown_pct, maximal_drawdown_pct, total_trades, win_rate_pct, recovery_factor) against reports/samples/sample_report.summary.json.",
+    "Run `grep -nP '[^\\x00-\\x7F]' GaganEA.mq5 tools/analyze_report.py automation/run_backtest_loop.ps1 automation/backtest_template.ini` to record the CURRENT ASCII state as a baseline (README.md/ITERATION_LOG.md already contain em dashes and are pre-existing; do not modify them for ASCII in this feature)."
+  ],
+  "acceptance_criteria": [
+    "python3 -m py_compile succeeds on both existing tools .py files.",
+    "The existing analyzer test suite runs and all 16 tests pass; the working command is recorded in findings.",
+    "The analyzer summary-dict API and metric key names are confirmed and recorded in findings for FEAT-002 to reuse.",
+    "The baseline ASCII state of the code/script files (excluding pre-existing markdown) is recorded."
+  ],
+  "verification": [
+    "python3 -m unittest discover -s tools -p 'test_*.py' from repo root shows OK with 16 tests.",
+    "python3 -m py_compile tools/analyze_report.py exits 0."
+  ],
+  "blocked_reason": null,
+  "findings": {
+    "python_version": "Python 3.9.25",
+    "py_compile": "python3 -m py_compile tools/analyze_report.py tools/test_analyze_report.py -> exit 0, no errors.",
+    "test_command": "WORKING: `python3 -m unittest discover -s tools -p 'test_*.py'` from repo root -> Ran 16 tests, OK. NOTE: `python3 -m unittest tools.test_analyze_report` and `python3 -m unittest -v tools.test_analyze_report` FAIL with ModuleNotFoundError: No module named 'analyze_report', because tools/test_analyze_report.py does a bare `import analyze_report` (line 23) which requires tools/ on sys.path. Discover adds the start dir (tools/) to sys.path so it resolves; the dotted-module form does not. FEAT-002 tuner tests should either use discover, or run from inside tools/, or the test should insert its dir into sys.path. All 16 existing tests pass under the discover form.",
+    "analyzer_api": {
+      "entrypoint": "analyze_file(path, json_dir=None, write_json=True) in tools/analyze_report.py (line 764). Returns the summary dict from summarize(path, metrics, trade_table, flags) (line 666). When write_json=True it writes <basename>.summary.json next to the report (or into json_dir if given). Raises on I/O errors.",
+      "summary_dict_shape": "top-level keys: report, report_path, metrics (dict), trade_table (dict: count, profit_column_found, aggregate, rows_truncated, rows_kept), diagnosis (dict: verdict, flags[]).",
+      "metric_keys_confirmed": ["total_net_profit", "profit_factor", "relative_drawdown_pct", "maximal_drawdown_pct", "total_trades", "win_rate_pct", "recovery_factor", "sharpe_ratio"],
+      "full_metric_keys_from_sample": ["total_net_profit", "gross_profit", "gross_loss", "profit_factor", "expected_payoff", "recovery_factor", "sharpe_ratio", "absolute_drawdown", "maximal_drawdown", "relative_drawdown", "total_trades", "total_deals", "profit_trades", "loss_trades", "largest_profit_trade", "largest_loss_trade", "average_profit_trade", "average_loss_trade", "max_consecutive_wins", "max_consecutive_losses", "maximal_drawdown_pct", "maximal_drawdown_money", "relative_drawdown_pct", "relative_drawdown_money", "absolute_drawdown_money", "win_rate_pct", "profit_trades_count", "loss_trades_count", "max_consecutive_wins_count", "max_consecutive_wins_money", "max_consecutive_losses_count", "max_consecutive_losses_money"],
+      "schema_reference": "reports/samples/sample_report.summary.json",
+      "reuse_guidance": "FEAT-002 must reuse analyze_file / summarize or read the .summary.json; do NOT reimplement MT5 report parsing."
+    },
+    "ascii_baseline": "grep -nP '[^\\x00-\\x7F]' GaganEA.mq5 tools/analyze_report.py automation/run_backtest_loop.ps1 automation/backtest_template.ini found 3 PRE-EXISTING non-ASCII occurrences (all out of scope, not introduced by this feature): GaganEA.mq5:1426 (em dash in a comment '// Background - taller...'), GaganEA.mq5:1429 (em dash in a comment '// Title row - orange...'), tools/analyze_report.py:204 (currency symbols in regex re.sub(r\"[$EUR GBP JPY %]\", \"\", s) - used intentionally to strip currency chars). automation/run_backtest_loop.ps1 and automation/backtest_template.ini are clean ASCII. New/edited code files in later features must stay pure ASCII.",
+    "verification_note": "No source files created or modified in this verification-only feature. Only the task-state feature file was updated. In-sandbox verification only: NO MQL5 compiler / MT5 / PowerShell available, so EA compile, Strategy Tester runs, and the PowerShell loop remain UNVERIFIABLE here."
+  }
+}

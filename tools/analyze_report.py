@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""Analyze MetaTrader 5 Strategy Tester HTML backtest reports for GaganEA.
+"""Analyze MetaTrader 5 Strategy Tester HTML backtest reports for HappyBot.
 
-This tool is part of the GaganEA (XAUUSD M5) backtest-improvement loop. It parses
+This tool is part of the HappyBot (XAUUSD M5) backtest-improvement loop. It parses
 an MT5 Strategy Tester HTML report (both the older "ReportTester" layout and the
 newer Strategy Tester export), extracts the key performance metrics, produces a
 human-readable summary plus a DIAGNOSIS tuned for the user's stated goal --

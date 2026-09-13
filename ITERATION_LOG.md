@@ -1,4 +1,4 @@
-# GaganEA Iteration Log
+# HappyBot Iteration Log
 
 A per-round changelog for the XAUUSD M5 backtest-improvement loop.
 

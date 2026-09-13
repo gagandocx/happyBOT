@@ -1,6 +1,6 @@
-# GaganEA Backtest Automation - Setup & Operation
+# HappyBot Backtest Automation - Setup & Operation
 
-This folder automates the GaganEA improvement loop on **your local Windows PC**:
+This folder automates the HappyBot improvement loop on **your local Windows PC**:
 
 > **compile -> headless backtest -> analyze -> commit/push -> repeat**
 
@@ -25,7 +25,7 @@ Files in this folder:
 Each round the harness performs, in order:
 
 - **(a)** `git pull` the repo
-- **(b)** copy `GaganEA.mq5` into MT5's `MQL5\Experts` folder
+- **(b)** copy `HappyBot.mq5` into MT5's `MQL5\Experts` folder
 - **(c)** compile it headlessly with `metaeditor64.exe` and **parse the compile
   log** - it aborts on any compile error (the compiler's *exit code* is
   unreliable across MT5 builds, so we read the log instead)
@@ -105,8 +105,8 @@ machine-specific path lives there and nowhere else:
 | `Terminal64Exe` | full path to `terminal64.exe` | section 3a |
 | `MT5DataDir` | the hashed `...\Terminal\<HASH>` folder | section 3b |
 | `ExpertsSubDir` | `MQL5\Experts` (rarely changes) | - |
-| `RepoDir` | your local `happyBOT` checkout (contains `GaganEA.mq5`) | your clone |
-| `ExpertName` | `GaganEA` (the compiled EA name, no extension) | - |
+| `RepoDir` | your local `happyBOT` checkout (contains `HappyBot.mq5`) | your clone |
+| `ExpertName` | `HappyBot` (the compiled EA name, no extension) | - |
 | `GitBranch` | the branch you work on (default `main`) | - |
 | `TesterTimeoutSec` | safety timeout for one backtest (default 3600) | - |
 
@@ -203,7 +203,7 @@ auto-tails the newest MT5 tester log (see section 10) so you can see why.
 Run in an **Administrator** Command Prompt (adjust the path):
 
 ```bat
-schtasks /Create /TN "GaganEA Backtest Loop" /SC DAILY /ST 02:00 ^
+schtasks /Create /TN "HappyBot Backtest Loop" /SC DAILY /ST 02:00 ^
   /TR "powershell.exe -ExecutionPolicy Bypass -NoProfile -File \"C:\Users\YOU\happyBOT\automation\run_backtest_loop.ps1\" -RoundNumber 1" ^
   /RL LIMITED /F
 ```
@@ -239,12 +239,12 @@ These are two **independent** settings, and the combination is intended:
   chart timeframe* - the modelling/tick granularity of the simulation. Using
   **M1** lets "Every tick based on real ticks" be reconstructed at the finest
   readily-available bar granularity, giving the most faithful fills for gold.
-- **EA `Trade_Timeframe=M5`** is a **GaganEA input**. It is the timeframe the
+- **EA `Trade_Timeframe=M5`** is a **HappyBot input**. It is the timeframe the
   EA's own logic reads/trades on. **We do NOT change it**, and this harness does
   **not** set EA inputs at all.
 
 So the tester steps through M1 fidelity while the EA still makes its decisions on
-its M5 logic. `GaganEA.mq5` is left byte-for-byte unchanged.
+its M5 logic. `HappyBot.mq5` is left byte-for-byte unchanged.
 
 ---
 
@@ -324,7 +324,7 @@ look for:
 ### Other issues
 
 - **Compile errors** - the harness aborts step (c) and points at the compile log
-  in `automation\logs\compile_*.log`. Open it, fix `GaganEA.mq5`, re-run. (Exit
+  in `automation\logs\compile_*.log`. Open it, fix `HappyBot.mq5`, re-run. (Exit
   codes are unreliable, so the harness trusts the *log*, not the code.)
 - **Report not found (step e)** - first read "Did the pass actually run?" above.
   Then check `MT5DataDir` is the correct hashed folder (section 3b). MT5 writes

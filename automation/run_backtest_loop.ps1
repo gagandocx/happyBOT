@@ -1,11 +1,11 @@
 <#
 ================================================================================
- GaganEA - automated backtest loop  (run_backtest_loop.ps1)
+ HappyBot - automated backtest loop  (run_backtest_loop.ps1)
 ================================================================================
  Runs, hands-off, the full round loop on YOUR local Windows PC:
 
    (a) git pull the repo
-   (b) copy GaganEA.mq5 into the MT5 MQL5\Experts folder
+   (b) copy HappyBot.mq5 into the MT5 MQL5\Experts folder
    (c) compile it headlessly with metaeditor64.exe and PARSE the compile log
        (aborting on any compile error - the metaeditor exit code is unreliable
        across builds, so we do NOT trust it)
@@ -69,14 +69,14 @@ $Config = @{
     # --- Sub-path (inside MT5DataDir) to the Experts folder. Rarely changes. ---
     ExpertsSubDir   = 'MQL5\Experts'
 
-    # --- This git repo checkout on your PC (the folder containing GaganEA.mq5). ---
+    # --- This git repo checkout on your PC (the folder containing HappyBot.mq5). ---
     # NOTE: verify this matches where you cloned happyBOT on your PC and edit if not.
     RepoDir         = 'C:\Users\gagan\happyBOT'
 
     # --- Name the compiled EA will have inside MQL5\Experts (no extension). ---
-    # The script copies GaganEA.mq5 to <MT5DataDir>\<ExpertsSubDir>\<ExpertName>.mq5
-    # and the tester loads <ExpertName>. Keep this in sync with GaganEA.mq5.
-    ExpertName      = 'GaganEA'
+    # The script copies HappyBot.mq5 to <MT5DataDir>\<ExpertsSubDir>\<ExpertName>.mq5
+    # and the tester loads <ExpertName>. Keep this in sync with HappyBot.mq5.
+    ExpertName      = 'HappyBot'
 
     # --- Git branch to pull/commit/push. Match the branch you work on. ---
     # Round 0 tooling is merged into main; the loop now tracks main.
@@ -225,7 +225,7 @@ function Write-NewestTesterLogTail {
     }
 }
 
-Write-Log ("=== GaganEA backtest loop: {0}, RunDate {1} ===" -f $RoundTag, $RunDate) 'STEP'
+Write-Log ("=== HappyBot backtest loop: {0}, RunDate {1} ===" -f $RoundTag, $RunDate) 'STEP'
 Write-Log ("Log file: {0}" -f $LogFile)
 
 # --- Sanity-check the configuration before we touch anything. -----------------
@@ -278,12 +278,12 @@ try {
 # ==============================================================================
 # STEP (b) - copy the EA source into MT5's MQL5\Experts
 # ==============================================================================
-$ExpertMq5InRepo = Join-Path $Config.RepoDir 'GaganEA.mq5'
+$ExpertMq5InRepo = Join-Path $Config.RepoDir 'HappyBot.mq5'
 $ExpertMq5InMt5  = Join-Path $ExpertsDir ("{0}.mq5" -f $Config.ExpertName)
 try {
     Write-Log "STEP (b) copy EA into MT5 Experts folder" 'STEP'
     if (-not (Test-Path -LiteralPath $ExpertMq5InRepo)) {
-        throw "GaganEA.mq5 not found in repo: $ExpertMq5InRepo"
+        throw "HappyBot.mq5 not found in repo: $ExpertMq5InRepo"
     }
     Copy-Item -LiteralPath $ExpertMq5InRepo -Destination $ExpertMq5InMt5 -Force
     Write-Log ("Copied {0} -> {1}" -f $ExpertMq5InRepo, $ExpertMq5InMt5)
@@ -335,7 +335,7 @@ try {
     $hasErrorLine = [regex]::IsMatch($logText, '(?im)\(\d+,\d+\)\s*:\s*error\s')
 
     if (($errorCount -ne $null -and $errorCount -gt 0) -or $hasErrorLine) {
-        throw "compile reported errors (see $CompileLog). Fix GaganEA.mq5 and retry."
+        throw "compile reported errors (see $CompileLog). Fix HappyBot.mq5 and retry."
     }
     Write-Log "Compile OK (no errors found in log)."
 } catch {

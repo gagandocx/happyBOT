@@ -1,6 +1,6 @@
-"""GaganStrategy: a faithful (NOT byte-exact) Python port of GaganEA.mq5 v2.12.
+"""HappyBotStrategy: a faithful (NOT byte-exact) Python port of HappyBot.mq5 v2.12.
 
-This ports the CURRENT entry/exit core of GaganEA.mq5 (Round 4 confluence +
+This ports the CURRENT entry/exit core of HappyBot.mq5 (Round 4 confluence +
 ATR dynamic SL/TP + tiered partials). It deliberately does NOT port the many
 legacy/optional sub-systems that Round 4 layers on top and that are off or
 secondary for the tuned strategy (candlestick/chart pattern detectors, AMA exit,
@@ -8,7 +8,7 @@ reversal exit, basket trailing, master/global equity protection, news filter,
 dashboard). Those are documented here as intentionally omitted so parity work
 knows what is and is not modeled.
 
-WHAT IS MODELED (referencing GaganEA.mq5 line regions):
+WHAT IS MODELED (referencing HappyBot.mq5 line regions):
   ENTRY (OpenTrade ~572-712, on each CLOSED M5 bar):
     * trend: htfBull/htfBear = mid vs HTF EMA200 (H1); ctfBull/ctfBear = mid vs
       CTF EMA200 (M5).
@@ -80,7 +80,7 @@ if _TUNER_DIR not in sys.path:
 
 import params as tuner_params  # noqa: E402
 
-# The 11 tuner-managed params (exact GaganEA input names). These are validated
+# The 11 tuner-managed params (exact HappyBot input names). These are validated
 # via tuner_params.validate so Python and MT5 search the SAME space.
 TUNER_PARAM_NAMES = list(tuner_params.PARAM_NAMES)
 
@@ -95,17 +95,17 @@ LOT_STEP = 0.01
 
 
 @register
-class GaganStrategy(Strategy):
-    """Faithful port of GaganEA v2.12's current entry/exit core."""
+class HappyBotStrategy(Strategy):
+    """Faithful port of HappyBot v2.12's current entry/exit core."""
 
-    NAME = "gagan"
+    NAME = "happybot"
 
     @classmethod
     def default_params(cls) -> Dict[str, object]:
         p = {}  # type: Dict[str, object]
         # -- 11 tuner-managed params (defaults from automation/tuner/params). --
         p.update(tuner_params.defaults())
-        # -- Round 4 structural params (GaganEA inputs). --
+        # -- Round 4 structural params (HappyBot inputs). --
         p["EMA_Period_HTF"] = 200
         p["EMA_Period_CTF"] = 200
         p["Max_LotSize"] = 10.0

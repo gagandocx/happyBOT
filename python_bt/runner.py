@@ -5,10 +5,10 @@ diagnosis, optionally emit a machine-readable JSON, and A/B compare two param
 sets or two strategies.
 
 Examples:
-    python3 -m python_bt.runner --strategy gagan --to 2026.07.02 --mode bar
+    python3 -m python_bt.runner --strategy happybot --to 2026.07.02 --mode bar
     python3 -m python_bt.runner --params '{"Risk_Percent":0.5}' --json out.json
     python3 -m python_bt.runner --compare --params '{}' --params '{"Risk_Percent":2.0}'
-    python3 -m python_bt.runner --compare --strategy gagan --strategy gagan --to 2026.07.02
+    python3 -m python_bt.runner --compare --strategy happybot --strategy happybot --to 2026.07.02
 
 Diagnosis reuses tools/analyze_report.py's build_diagnosis / diagnosis_verdict
 (imported by adding tools/ to sys.path) so the Python-side output speaks the
@@ -216,7 +216,7 @@ def _resolve_ab(strategies: Optional[List[str]], param_strs: Optional[List[str]]
     Accepts two --strategy, or two --params, or a mix; a single value is reused
     for both legs where only the other varies.
     """
-    strategies = strategies or ["gagan"]
+    strategies = strategies or ["happybot"]
     param_strs = param_strs or [None]
 
     def leg(i):
@@ -241,7 +241,7 @@ def main(argv: Optional[List[str]] = None) -> int:
             print("wrote {}".format(args.json_out))
         return 0
 
-    strategy = (args.strategy or ["gagan"])[0]
+    strategy = (args.strategy or ["happybot"])[0]
     params = _load_params((args.params or [None])[0])
     result = run_once(args.data, strategy, params, args.date_from, args.date_to,
                       args.mode, args.max_ticks)

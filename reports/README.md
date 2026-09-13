@@ -1,6 +1,6 @@
 # Backtest Reports
 
-This folder holds MT5 Strategy Tester HTML backtest reports for **GaganEA**
+This folder holds MT5 Strategy Tester HTML backtest reports for **HappyBot**
 (XAUUSD, M5, Fusion Markets) and the JSON summaries produced by the analyzer.
 
 The loop is human-in-the-loop:
@@ -23,7 +23,7 @@ The loop is human-in-the-loop:
 
 1. Open MetaTrader 5 and press **Ctrl+R** (or **View → Strategy Tester**).
 2. In the **Settings** tab choose:
-   - **Expert:** `GaganEA`
+   - **Expert:** `HappyBot`
    - **Symbol:** `XAUUSD`
    - **Period (timeframe):** `M5`
      - > Note: the *automated* harness (`automation/`) instead uses the tester
@@ -112,7 +112,7 @@ are easy to tune.
 
 ## 4. Gold / XAUUSD note (important when reading configs)
 
-Gold on MT5 is quoted with **2 or 3 digits**. GaganEA computes
+Gold on MT5 is quoted with **2 or 3 digits**. HappyBot computes
 `pip = point * 10` for 3/5-digit symbols, so the EA's `*_Pips` inputs are
 effectively **POINTS**, not classic pips. For example `StopLoss_Pips = 2500`
 means **2500 points**. Keep this in mind when interpreting metrics or adjusting

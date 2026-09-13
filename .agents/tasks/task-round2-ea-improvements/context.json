@@ -1,0 +1,28 @@
+{
+  "project_type": "MQL5 MetaTrader 5 Expert Advisor (single-file trading bot) for XAUUSD, with a Python analysis harness on the side",
+  "language": "MQL5 (C-like). Python 3 stdlib for tooling only.",
+  "build_system": "MetaEditor (MQL5 compiler) on the user's Windows PC. NO compiler and NO MT5 in this Linux sandbox - cannot compile or backtest here.",
+  "test_framework": "No unit tests for the EA. Correctness is verified by careful read-through + MQL5 knowledge, and ultimately by the user's next MT5 Strategy Tester backtest on Windows (Fusion Markets, build 6191). tools/test_analyze_report.py covers only the Python analyzer, which is out of scope.",
+  "build_command": "N/A in sandbox. User compiles GaganEA.mq5 in MetaEditor on Windows.",
+  "test_command": "N/A in sandbox. User runs MT5 Strategy Tester: XAUUSD, tester Period M1, EA Trade_Timeframe M5, deposit 1000 USD, leverage 1:500, real ticks.",
+  "verification_instructions": "1) Re-read the full modified GaganEA.mq5 to confirm MQL5 syntax is valid for build 6191 (CTrade/CPositionInfo API, no undeclared identifiers, balanced braces, no non-ASCII in new code). 2) Confirm OnInit/OnTick structure and the dashboard are preserved. 3) Confirm every changed input default and every new/rewired function call is consistent. 4) grep for the old version string to confirm all occurrences were bumped. The authoritative pass/fail is the user's next backtest, which we cannot run.",
+  "snapshot_or_generated_files": "None relevant. The EA compiles to GaganEA.ex5 on the user's PC (gitignored). No generated files in this repo need regenerating for this task.",
+  "setup_instructions": "git checkout main && git pull --ff-only origin main. Work directly in the working tree on main. Do NOT commit or push - the orchestrator commits to main afterward. Only modify GaganEA.mq5 and (append-only) ITERATION_LOG.md.",
+  "environment_constraints": "No MQL5 compiler, no MT5, no wine in the Linux sandbox - cannot compile or backtest. Do NOT fabricate performance numbers. Keep everything ASCII in any file touched (a prior bug was non-ASCII chars breaking tooling); note the EXISTING dashboard already uses some hex-escaped glyphs like \\x25A0 and byte-escapes like \\xE2\\x9C\\x93 - leave those as-is, just do not introduce new raw non-ASCII bytes.",
+  "contribution_requirements": "No-PR, direct-to-main workflow. Do NOT change files other than GaganEA.mq5 and ITERATION_LOG.md. Preserve OnInit/OnTick structure and the dashboard. Make the DEFAULT input values conservative because the backtest harness does not override inputs. Bump #property version and dashboard title/comment to a new version (2.11).",
+  "key_patterns": "Single-file EA. Inputs declared with 'input' groups near the top. pip = point*10 for 3/5-digit symbols so *_Pips inputs are POINTS on gold. Entries in OpenTrade() gated by HTF+CTF EMA trend, Min_EMA_Distance (measured in _Point), a detected candle/chart pattern, and DistanceCheckOK(). Lot sizing in CalcLotSize() = balance*Risk_Percent/100 / (slDist/tickSize * tickVal). Exits: ManageTargets (T1/T2/T3 partial closes via t1_tickets/t2_tickets arrays), ManageIndividualTrailing (only after T2), ManageBasketTrailing, CheckMasterEquityProtection, CheckEquityProtection (global close). CloseAllByType/CloseAllPositions do real closes.",
+  "relevant_files": [
+    "GaganEA.mq5 - the ONLY source file to edit (~1678 lines)",
+    "ITERATION_LOG.md - append a Round 2 section (append-only)",
+    "README.md - context only (v2.10 feature list); do not edit unless asked"
+  ],
+  "directory_structure": "Repo root: GaganEA.mq5 (EA source), ITERATION_LOG.md, README.md. automation/ (Windows backtest harness - do not touch). reports/ (HTML backtest reports + samples). tools/ (Python analyzer - out of scope).",
+  "known_issues_confirmed_by_reading": {
+    "dead_functions": "ApplyMasterTrailing (line ~1015) and ApplyTrailingToTickets (line ~1045) are DEFINED but NEVER called anywhere. Confirmed via grep: only the definitions appear, no call sites. The master/basket protection instead relies on CloseAllByType (which does close), and per-position real-SL trailing only happens in ManageIndividualTrailing AFTER T2. So open positions before T2 have only the fixed 2500-pt SL.",
+    "risk_percent": "Risk_Percent default = 6.0 (very high). Line ~55.",
+    "reward_risk": "StopLoss_Pips=2500, T1=800/close 65%, T2=1200/close 80%, T3=2000/close 100%. Winners closed early and small; losers run to 2500. Avg win 0.55 vs avg loss 0.89.",
+    "stacking": "DistanceCheckOK only enforces Min_Trade_Distance=20 points (~$0.20 on gold) between same-side entries. No cap on concurrent position COUNT and no account-level max-open-risk guard. Entries can stack heavily.",
+    "overtrading": "All 15 candlestick + 10 chart patterns enabled; Reversal_Min_Confirmations=2; entry attempted on every new M5 bar with no cooldown; Min_EMA_Distance=150 (in _Point). ~100 trades/day observed.",
+    "version_strings": "GaganEA v2.10 / 2.10 appears at lines 2, 15, 16, 282, 304 and dashboard title near line 1393 (' GaganEA v2.10')."
+  }
+}
