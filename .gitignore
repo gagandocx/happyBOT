@@ -28,3 +28,12 @@ automation/logs/
 # Auto-tuner per-iteration logs. The tuner's state (tuner_state.json) and the
 # current_params.json marker stay tracked; only the logs dir is ignored.
 automation/tuner/logs/
+
+# Large market-data artifacts. The split .zip.NNN chunks ARE tracked (they are
+# the transport for the raw XAUUSD tick data, each < 100 MB). But the reassembled
+# archive and the extracted multi-hundred-MB CSV must NEVER be committed - they
+# are regenerated on demand from the chunks. Keep the chunks; ignore the rest.
+data/joined.bin
+data/*.zip
+data/**/*.csv
+data/*.csv
