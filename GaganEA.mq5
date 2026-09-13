@@ -1,19 +1,19 @@
 //+------------------------------------------------------------------+
-//|                                        GaganEA v2.10 |
+//|                                        GaganEA v2.11 |
 //|                           Reconstructed from UI + Backtest Data  |
 //|                                                                  |
-//| KEY FINDINGS FROM BACKTEST ANALYSIS:                             |
-//|  - $1000 -> $8970 in 28 days (797% growth)                      |
-//|  - 1246 trade events, consistent ~8.5% deposit load per trade    |
-//|  - Each trade cycle: open -> T1 partial -> T2 partial -> T3/SL   |
-//|  - 872 "FLAT" periods (no positions) = EA waits for clean signal |
-//|  - 12 big SL hits (~$100-750 range) = basket SL events           |
-//|  - 276 multi-close events = basket/partial close sequences       |
-//|  - Deposit load always ~8.7% = risk-based lot sizing working     |
-//|  - Tiny -$0.11 recurring losses = swap/commission on partials    |
+//| ROUND 2 CONSERVATIVE BUILD (v2.11):                              |
+//|  Round 1 baseline (prior stock build): net -387.57, DD 41.09pct, |
+//|  PF 0.62, win rate 52.27%, 2204 trades. Diagnosis: overtrading,  |
+//|  winners smaller than losers, 6% risk + stacking drive the DD.   |
+//|  Round 2 attacks survival first: cut risk (1%), cap concurrent   |
+//|  positions, widen entry distance + stacking gap, add an entry    |
+//|  cooldown, disable the noisier patterns, fix reward:risk, and    |
+//|  wire up the previously-dead real-SL protection functions.       |
+//|  See ITERATION_LOG.md Round 2 for the exact changes.             |
 //+------------------------------------------------------------------+
-#property copyright "GaganEA v2.10"
-#property version   "2.10"
+#property copyright "GaganEA v2.11"
+#property version   "2.11"
 #property strict
 
 #include <Trade\Trade.mqh>
@@ -46,25 +46,25 @@ input int             EMA_Period_HTF      = 200;
 input group "=== TRADE EXECUTION (Current TF) ==="
 input ENUM_TIMEFRAMES Trade_Timeframe     = PERIOD_M5;
 input int             EMA_Period_CTF      = 200;
-input int             Min_EMA_Distance    = 150;
+input int             Min_EMA_Distance    = 400;
 
 input group "=== LOT SIZE ==="
 input double          Manual_LotSize      = 0.0;
-input double          Risk_Percent        = 6.0;
+input double          Risk_Percent        = 1.0;
 input double          Max_LotSize         = 10.0;
 
 input group "=== STOP LOSS & TARGETS ==="
 input bool            Use_StopLoss        = true;
-input int             StopLoss_Pips       = 2500;
-input int             T1_Pips             = 800;
-input int             T2_Pips             = 1200;
-input int             T3_Pips             = 2000;
-input double          T1_ClosePercent     = 65.0;
-input double          T2_ClosePercent     = 80.0;
+input int             StopLoss_Pips       = 1000;
+input int             T1_Pips             = 500;
+input int             T2_Pips             = 1000;
+input int             T3_Pips             = 1800;
+input double          T1_ClosePercent     = 33.0;
+input double          T2_ClosePercent     = 50.0;
 input double          T3_ClosePercent     = 100.0;
 
 input group "=== TRAILING STOP (Individual) ==="
-input int             Trail_Step_Pips     = 30;
+input int             Trail_Step_Pips     = 400;
 
 input group "=== AMA TREND-FLIP EXIT (M1) ==="
 input bool             Use_AMA_Exit        = true;
@@ -92,12 +92,14 @@ input ENUM_TIMEFRAMES Reversal_Timeframe          = PERIOD_M5;
 
 input group "=== AVERAGING BASKET TRAILING (Same-Side) ==="
 input bool            Use_Basket_Trailing = true;
-input double          Basket_Lock_Pips    = 30.0;
-input double          Basket_Trail_Step   = 15.0;
+input double          Basket_Lock_Pips    = 500.0;
+input double          Basket_Trail_Step   = 250.0;
 
 input group "=== MULTI-TRADE SETTINGS ==="
-input int             Min_Trade_Distance  = 20;
+input int             Min_Trade_Distance  = 500;
 input int             Max_Trade_Distance  = 40;
+input int             Max_Concurrent_Positions = 2;
+input int             Entry_Cooldown_Bars = 3;
 
 input group "=== EQUITY PROTECTION (Global Close) ==="
 input bool            Use_EP_Percent      = true;
@@ -110,8 +112,8 @@ input bool            Use_Master_EP                = true;
 input double          Master_Trigger_DD_Percent    = 1.5;
 input int             Master_Trigger_Min_Trades    = 3;
 input ENUM_MASTER_MODE Master_Logic_Mode           = MODE_ALL_SIMULTANEOUS;
-input double          Master_Lock_Pips             = 30.0;
-input double          Master_Trail_Step            = 15.0;
+input double          Master_Lock_Pips             = 500.0;
+input double          Master_Trail_Step            = 250.0;
 
 input group "=== HIGH IMPACT NEWS FILTER ==="
 input bool            News_Filter_Enable  = false;
@@ -119,33 +121,33 @@ input int             News_Pause_Before   = 30;
 input int             News_Pause_After    = 30;
 
 input group "=== CANDLESTICK PATTERNS ==="
-input bool            Use_Hammer         = true;
-input bool            Use_InvHammer      = true;
+input bool            Use_Hammer         = false;
+input bool            Use_InvHammer      = false;
 input bool            Use_BullEngulf     = true;
-input bool            Use_PiercingLine   = true;
+input bool            Use_PiercingLine   = false;
 input bool            Use_MorningStar    = true;
 input bool            Use_ThreeWhite     = true;
-input bool            Use_BullHarami     = true;
-input bool            Use_Doji           = true;
-input bool            Use_ShootingStar   = true;
+input bool            Use_BullHarami     = false;
+input bool            Use_Doji           = false;
+input bool            Use_ShootingStar   = false;
 input bool            Use_BearEngulf     = true;
 input bool            Use_EveningStar    = true;
 input bool            Use_ThreeBlack     = true;
-input bool            Use_DarkCloud      = true;
-input bool            Use_BearHarami     = true;
-input bool            Use_HangingMan     = true;
+input bool            Use_DarkCloud      = false;
+input bool            Use_BearHarami     = false;
+input bool            Use_HangingMan     = false;
 
 input group "=== CHART PATTERNS ==="
-input bool            Use_DoubleTop      = true;
-input bool            Use_DoubleBottom   = true;
-input bool            Use_HeadShoulders  = true;
-input bool            Use_InvHeadShould  = true;
-input bool            Use_BearFlag       = true;
-input bool            Use_BullFlag       = true;
-input bool            Use_RisingWedge    = true;
-input bool            Use_FallingWedge   = true;
-input bool            Use_BearTriangle   = true;
-input bool            Use_BullTriangle   = true;
+input bool            Use_DoubleTop      = false;
+input bool            Use_DoubleBottom   = false;
+input bool            Use_HeadShoulders  = false;
+input bool            Use_InvHeadShould  = false;
+input bool            Use_BearFlag       = false;
+input bool            Use_BullFlag       = false;
+input bool            Use_RisingWedge    = false;
+input bool            Use_FallingWedge   = false;
+input bool            Use_BearTriangle   = false;
+input bool            Use_BullTriangle   = false;
 
 input group "=== NEWS FILTER ==="
 input bool            News_FilterEnable  = false;
@@ -206,6 +208,7 @@ double pip, point_size;
 bool     news_active;
 datetime last_bar_time;
 datetime last_m1_bar_time;
+datetime last_entry_bar_time = 0;
 
 //+------------------------------------------------------------------+
 //| Expert initialization function                                    |
@@ -275,11 +278,12 @@ int OnInit()
    news_active = false;
    last_bar_time = 0;
    last_m1_bar_time = 0;
+   last_entry_bar_time = 0;
    pnl_last_month = 0;
    
    if(Show_Dashboard) CreateDashboard();
    
-   Print("GaganEA v2.10 initialized on ", _Symbol, " TF:", EnumToString(Trade_Timeframe));
+   Print("GaganEA v2.11 initialized on ", _Symbol, " TF:", EnumToString(Trade_Timeframe));
    return INIT_SUCCEEDED;
 }
 
@@ -301,7 +305,7 @@ void OnDeinit(const int reason)
    }
    
    DeleteDashboard();
-   Print("GaganEA v2.10 removed. Reason: ", reason);
+   Print("GaganEA v2.11 removed. Reason: ", reason);
 }
 
 //+------------------------------------------------------------------+
@@ -417,6 +421,18 @@ void OpenTrade()
    double dist  = MathAbs(bid - emaCTF[0]) / _Point;
    bool farEnough = (dist >= Min_EMA_Distance);
    
+   // Concurrent-exposure cap: bound total simultaneous EA positions
+   int totalOpen = open_buy_count + open_sell_count;
+   if(Max_Concurrent_Positions > 0 && totalOpen >= Max_Concurrent_Positions) return;
+   
+   // Entry cooldown: require Entry_Cooldown_Bars to elapse since the last entry
+   if(Entry_Cooldown_Bars > 0 && last_entry_bar_time > 0)
+   {
+      datetime nowBar = iTime(_Symbol, Trade_Timeframe, 0);
+      if((nowBar - last_entry_bar_time) < (Entry_Cooldown_Bars * PeriodSeconds(Trade_Timeframe)))
+         return;
+   }
+   
    // BUY
    if(htfBull && ctfBull && farEnough)
    {
@@ -426,7 +442,10 @@ void OpenTrade()
          double lots = CalcLotSize();
          double sl = Use_StopLoss ? (ask - StopLoss_Pips * _Point) : 0;
          if(trade.Buy(lots, _Symbol, ask, sl, 0, EA_Comment))
+         {
+            last_entry_bar_time = iTime(_Symbol, Trade_Timeframe, 0);
             Print("BUY opened: ", DoubleToString(lots,2), " lots | Pattern:", pat);
+         }
       }
    }
    
@@ -439,7 +458,10 @@ void OpenTrade()
          double lots = CalcLotSize();
          double sl = Use_StopLoss ? (bid + StopLoss_Pips * _Point) : 0;
          if(trade.Sell(lots, _Symbol, bid, sl, 0, EA_Comment))
+         {
+            last_entry_bar_time = iTime(_Symbol, Trade_Timeframe, 0);
             Print("SELL opened: ", DoubleToString(lots,2), " lots | Pattern:", pat);
+         }
       }
    }
 }
@@ -604,17 +626,28 @@ void ManageTargets()
 }
 
 //+------------------------------------------------------------------+
-//| Individual Trailing (after T2)                                    |
+//| Individual Trailing (after T1 breakeven, then trail after T2)      |
 //+------------------------------------------------------------------+
 void ManageIndividualTrailing()
 {
-   for(int i = PositionsTotal()-1; i >= 0; i--)
+   // After-T1 protection: move winners to at least breakeven once T1 is banked
+   // (t1_tickets are populated by ManageTargets when T1 is hit).
+   ApplyBreakevenToTickets(t1_tickets);
+   
+   // After-T2 protection: trail the real SL by Trail_Step_Pips using the
+   // previously-dead ApplyTrailingToTickets helper (now wired up).
+   ApplyTrailingToTickets(t2_tickets, Trail_Step_Pips);
+}
+
+//+------------------------------------------------------------------+
+//| Move real SL to breakeven for tickets that have banked T1          |
+//+------------------------------------------------------------------+
+void ApplyBreakevenToTickets(ulong &tickets[])
+{
+   for(int i = 0; i < ArraySize(tickets); i++)
    {
-      if(!posInfo.SelectByIndex(i)) continue;
+      if(!posInfo.SelectByTicket(tickets[i])) continue;
       if(posInfo.Magic() != Magic_Number || posInfo.Symbol() != _Symbol) continue;
-      
-      ulong ticket = posInfo.Ticket();
-      if(!TicketInArray(t2_tickets, ticket)) continue;  // only after T2
       
       double op = posInfo.PriceOpen();
       double sl = posInfo.StopLoss();
@@ -623,15 +656,15 @@ void ManageIndividualTrailing()
       
       if(posInfo.PositionType() == POSITION_TYPE_BUY)
       {
-         double newSL = bid - Trail_Step_Pips * _Point;
-         if(newSL > sl && newSL > op)
-            trade.PositionModify(ticket, newSL, posInfo.TakeProfit());
+         // Only raise SL up to breakeven when price is already above entry
+         if(bid > op && (sl < op))
+            trade.PositionModify(tickets[i], op, posInfo.TakeProfit());
       }
       else
       {
-         double newSL = ask + Trail_Step_Pips * _Point;
-         if((sl == 0 || newSL < sl) && newSL < op)
-            trade.PositionModify(ticket, newSL, posInfo.TakeProfit());
+         // Only lower SL down to breakeven when price is already below entry
+         if(ask < op && (sl == 0 || sl > op))
+            trade.PositionModify(tickets[i], op, posInfo.TakeProfit());
       }
    }
 }
@@ -974,6 +1007,8 @@ void CheckMasterEquityProtection()
             masterBuyHigh = buyProfitPips;
             masterBuyTrail = masterBuyHigh - Master_Trail_Step;
          }
+         // Move real stop losses in addition to the CloseAllByType safety net
+         ApplyMasterTrailing(POSITION_TYPE_BUY, Master_Trail_Step);
          if(buyProfitPips <= masterBuyTrail)
          {
             CloseAllByType(POSITION_TYPE_BUY, "MasterEP");
@@ -999,6 +1034,8 @@ void CheckMasterEquityProtection()
             masterSellHigh = sellProfitPips;
             masterSellTrail = masterSellHigh - Master_Trail_Step;
          }
+         // Move real stop losses in addition to the CloseAllByType safety net
+         ApplyMasterTrailing(POSITION_TYPE_SELL, Master_Trail_Step);
          if(sellProfitPips <= masterSellTrail)
          {
             CloseAllByType(POSITION_TYPE_SELL, "MasterEP");
@@ -1391,7 +1428,7 @@ void CreateDashboard()
 
    // Title row — orange square bullet like OFT
    ObjLabel(lbl+"bullet", "\x25A0", x, y+2, C'255,140,0', 10, true);
-   ObjLabel(lbl+"title",  " GaganEA v2.10", x+12, y+2, clrWhite, 9, true);
+   ObjLabel(lbl+"title",  " GaganEA v2.11", x+12, y+2, clrWhite, 9, true);
    ObjLine(lbl+"d0", x, y+18, 305);
    
    // --- Symbol / TF block ---
