@@ -1,0 +1,16 @@
+{
+  "params": {
+    "Entry_Cooldown_Bars": 3,
+    "Max_Concurrent_Positions": 2,
+    "Min_EMA_Distance": 400,
+    "Min_Trade_Distance": 500,
+    "Risk_Percent": 1.0,
+    "StopLoss_Pips": 1000,
+    "T1_ClosePercent": 33.0,
+    "T1_Pips": 500,
+    "T2_ClosePercent": 50.0,
+    "T2_Pips": 1000,
+    "T3_Pips": 1800
+  },
+  "updated": "initialized-from-GaganEA.mq5-v2.11"
+}

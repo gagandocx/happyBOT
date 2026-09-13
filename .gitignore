@@ -4,14 +4,27 @@ __pycache__/
 
 # Generated analyzer output for real backtest reports.
 # Ad-hoc / scratch summaries are ignored, but the per-round summaries the
-# automation harness commits (reports/roundNN_YYYYMMDD.summary.json) and the
+# automation harness commits (reports/roundNN_YYYYMMDD.summary.json), the
+# per-iteration tuner summaries (reports/tuner/iterNNNN.summary.json), and the
 # synthetic verification artifacts under reports/samples/ are intentionally
-# kept (both are negated below). Keep the negations AFTER the ignore rule.
+# kept (all negated below). Keep the negations AFTER the ignore rule.
+#
+# NOTE on reports/tuner/: only the .summary.json files there are force-tracked
+# (they are tiny and are the permanent, complete history of every iteration).
+# The full iterNNNN.html reports are NOT ignored - they stay tracked too, but
+# run_tuner_loop.ps1 prunes (git rm) all but the newest N (TunerHtmlKeep, N=20
+# by default) each iteration so the repo does not accumulate unbounded large
+# HTML. The .summary.json files are never pruned. See automation/tuner/README.md.
 reports/*.summary.json
 !reports/round*.summary.json
+!reports/tuner/*.summary.json
 !reports/samples/*.summary.json
 
 # Per-run logs and generated runtime tester .ini from the automation harness.
 # The harness scripts and the .ini TEMPLATE stay tracked; only the logs dir is
 # ignored.
 automation/logs/
+
+# Auto-tuner per-iteration logs. The tuner's state (tuner_state.json) and the
+# current_params.json marker stay tracked; only the logs dir is ignored.
+automation/tuner/logs/

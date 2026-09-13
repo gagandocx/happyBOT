@@ -245,3 +245,67 @@ and robust out-of-sample, *not* raw headline return).
   logic. (b) In parallel, structural work on entry/exit quality to push PF above 1.
 - **Report file:** reports/round01_20260913.html (overwrote; note: report filename
   is fixed per run date — consider round-numbered filenames so history is retained).
+
+---
+
+## Round 3 — Rule-based auto-tuner + continuous loop  (pending next backtest)
+
+- **Hypothesis:** A rule-based auto-tuner can minimize the loss and hold relative
+  drawdown at or under 15% by grinding the numeric inputs (risk, entry distances,
+  SL/target ratios, cooldown, concurrency), but it CANNOT by itself create a
+  positive edge. Round 2 showed the edge is structurally negative (PF 0.58 < 1);
+  parameter tuning can control bleed and drawdown but the profit factor has to be
+  fixed with STRUCTURAL entry/exit changes, not numbers. This round builds the
+  tuner to prove the "control DD and minimize loss" half while being honest that
+  it will not, on its own, push PF above 1.
+- **Change made:** No trading-logic change to GaganEA v2.11. Added an on-PC
+  auto-tuner and its continuous orchestration, plus tests:
+  - `automation/tuner/` — stdlib-only Python package: `scoring.py` (the
+    authoritative two-tier score: maximize net profit under a hard 15%
+    relative-drawdown ceiling, DD>15% always below DD<=15%, PF tiebreaker,
+    <30-trade penalty), `params.py` (the 11-parameter space with bounds/steps and
+    ordering repair T1<T2<T3<=StopLoss so an invalid EA is never written),
+    `mq5_rewriter.py` (conservative per-line rewrite of the `input` default
+    literals only), `state.py` (restart-safe atomic JSON state with best-tracking
+    and history), and `tuner.py` (one idempotent CLI invocation). Tracked
+    `tuner_state.json` and `current_params.json` markers seed to the live v2.11
+    vector; per-iteration logs live under an ignored `logs/` dir.
+  - `automation/run_tuner_loop.ps1` + `automation/run_tuner_loop.bat` — the
+    CONTINUOUS orchestration: a `while` loop with no sleep gap that each cycle
+    pulls, copies the EA into MT5, compiles (with compile-log parsing), runs the
+    tester headless, copies the report to `reports/tuner/iterNNNN.html`, analyzes
+    it, invokes the tuner, prunes old full HTMLs (keeps the newest N, default 20;
+    keeps every summary JSON), and commits the report + summary +
+    `tuner_state.json` + `current_params.json` + `GaganEA.mq5`.
+  - Report history: reports are now per-iteration (`reports/tuner/iterNNNN.html`)
+    so history is not overwritten; the iteration index is read from
+    `tuner_state.json` so it is restart-safe.
+  - `.gitignore`: `reports/tuner/*.summary.json` is force-tracked (negation after
+    the ignore rule); the tuner logs dir stays ignored.
+  - Tests: 33 new stdlib unittest cases (scoring, params, rewriter, state), and
+    the existing 16 analyzer tests still pass.
+  - MECHANISM: score -> local search (coordinate descent) + rule-based nudges
+    (DD>15% cut risk/widen distances; overtrading widen distances/raise cooldown;
+    PF<1 tighten SL/lower T1) -> rewrite the mq5 input defaults -> recompile ->
+    backtest -> analyze -> ingest -> repeat, keeping the best-scoring version.
+- **Backtest config:**
+  - Symbol / timeframe: XAUUSD / M5 (tester Period M1, Model 4)
+  - Date range: fast ~1-month window (2026.08.11 - 2026.09.11) for continuous
+    iteration; VALIDATE any "best" on the full 6-month window (FromDate=2026.03.01)
+    before trusting it — continuous tuning on the short window overfits.
+  - Deposit: 1000 USD
+  - Leverage: 1:500
+  - Broker: Fusion Markets
+  - Modelling: Every tick based on real ticks
+- **Key metrics:** pending next backtest. The tuner and loop cannot run in the
+  authoring sandbox (no MT5, no MQL5 compiler, no PowerShell); the user's next
+  MT5 Strategy Tester runs on Windows are the authoritative check. No performance
+  numbers are claimed here.
+- **Diagnosis:** pending next backtest.
+- **Next step:** Run ONE manual tuner iteration first (a single backtest + one
+  `tuner.py` invocation) and eyeball it, then start `run_tuner_loop.bat`. Read
+  `tuner_state.json` / `automation/tuner/logs/tuner.log` to follow the grind, and
+  periodically validate the best on the full 6-month window. In parallel, pursue
+  the STRUCTURAL entry/exit work needed to lift PF above 1 — the tuner alone
+  cannot do that.
+- **Report file:** reports/tuner/iterNNNN.html (per-iteration, going forward).
