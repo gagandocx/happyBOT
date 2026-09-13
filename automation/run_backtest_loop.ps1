@@ -64,13 +64,14 @@ $Config = @{
     # --- Per-user MT5 DATA folder (the hashed folder, NOT the install dir) ---
     # Under %APPDATA%\MetaQuotes\Terminal\<HASH>. It is the one that contains a
     # MQL5\ subfolder and your account. SETUP.md section 3 shows how to find it.
-    MT5DataDir      = "$env:APPDATA\MetaQuotes\Terminal\PUT_YOUR_HASH_HERE"
+    MT5DataDir      = 'C:\Users\gagan\AppData\Roaming\MetaQuotes\Terminal\930119AA53207C8778B41171FBFFB46F'
 
     # --- Sub-path (inside MT5DataDir) to the Experts folder. Rarely changes. ---
     ExpertsSubDir   = 'MQL5\Experts'
 
     # --- This git repo checkout on your PC (the folder containing GaganEA.mq5). ---
-    RepoDir         = 'C:\Users\YOU\happyBOT'
+    # NOTE: verify this matches where you cloned happyBOT on your PC and edit if not.
+    RepoDir         = 'C:\Users\gagan\happyBOT'
 
     # --- Name the compiled EA will have inside MQL5\Experts (no extension). ---
     # The script copies GaganEA.mq5 to <MT5DataDir>\<ExpertsSubDir>\<ExpertName>.mq5
@@ -78,7 +79,8 @@ $Config = @{
     ExpertName      = 'GaganEA'
 
     # --- Git branch to pull/commit/push. Match the branch you work on. ---
-    GitBranch       = 'round0-backtest-tooling'
+    # Round 0 tooling is merged into main; the loop now tracks main.
+    GitBranch       = 'main'
 
     # --- Seconds to wait for a single backtest before giving up (safety net). ---
     TesterTimeoutSec = 3600
