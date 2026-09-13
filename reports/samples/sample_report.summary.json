@@ -1,0 +1,143 @@
+{
+  "report": "sample_report.html",
+  "report_path": "reports/samples/sample_report.html",
+  "metrics": {
+    "total_net_profit": 4812.55,
+    "gross_profit": 15940.2,
+    "gross_loss": -11127.65,
+    "profit_factor": 1.43,
+    "expected_payoff": 17.2,
+    "recovery_factor": 2.55,
+    "sharpe_ratio": 0.91,
+    "absolute_drawdown": 612.4,
+    "maximal_drawdown": 1889.3,
+    "relative_drawdown": 1720.1,
+    "total_trades": 280,
+    "total_deals": 560,
+    "profit_trades": 172,
+    "loss_trades": 108,
+    "largest_profit_trade": 420.15,
+    "largest_loss_trade": -315.8,
+    "average_profit_trade": 92.68,
+    "average_loss_trade": -103.03,
+    "max_consecutive_wins": 9,
+    "max_consecutive_losses": 5,
+    "maximal_drawdown_pct": 18.42,
+    "maximal_drawdown_money": 1889.3,
+    "relative_drawdown_pct": 16.75,
+    "relative_drawdown_money": 1720.1,
+    "absolute_drawdown_money": 612.4,
+    "win_rate_pct": 61.43,
+    "profit_trades_count": 172,
+    "loss_trades_count": 108,
+    "max_consecutive_wins_count": 9,
+    "max_consecutive_wins_money": 1240.55,
+    "max_consecutive_losses_count": 5,
+    "max_consecutive_losses_money": -1502.1
+  },
+  "trade_table": {
+    "count": 6,
+    "profit_column_found": true,
+    "aggregate": {
+      "profit_column_index": 5,
+      "rows_with_profit_value": 6,
+      "sum_profit_column": 344.5,
+      "positive_count": 2,
+      "negative_count": 1,
+      "zero_count": 3
+    },
+    "rows_truncated": false,
+    "rows_kept": 6,
+    "rows": [
+      [
+        "2024.01.02 08:15:00",
+        "1",
+        "buy",
+        "0.10",
+        "2058.30",
+        "0.00",
+        "10 000.00"
+      ],
+      [
+        "2024.01.02 11:40:00",
+        "2",
+        "sell",
+        "0.10",
+        "2072.10",
+        "138.00",
+        "10 138.00"
+      ],
+      [
+        "2024.01.03 09:05:00",
+        "3",
+        "buy",
+        "0.10",
+        "2065.55",
+        "0.00",
+        "10 138.00"
+      ],
+      [
+        "2024.01.03 15:20:00",
+        "4",
+        "sell",
+        "0.10",
+        "2049.80",
+        "-157.50",
+        "9 980.50"
+      ],
+      [
+        "2024.01.04 10:10:00",
+        "5",
+        "buy",
+        "0.20",
+        "2051.20",
+        "0.00",
+        "9 980.50"
+      ],
+      [
+        "2024.01.04 14:55:00",
+        "6",
+        "sell",
+        "0.20",
+        "2069.40",
+        "364.00",
+        "10 344.50"
+      ]
+    ]
+  },
+  "diagnosis": {
+    "verdict": "LOOKS REASONABLE (no warnings)",
+    "flags": [
+      {
+        "level": "ok",
+        "code": "net_profit_positive",
+        "message": "Net profit is positive (4812.55)."
+      },
+      {
+        "level": "ok",
+        "code": "drawdown_ok",
+        "message": "Relative drawdown 16.75% is within the conservative 20% threshold."
+      },
+      {
+        "level": "info",
+        "code": "profit_factor_ok",
+        "message": "Profit factor 1.43 is acceptable but not strong."
+      },
+      {
+        "level": "ok",
+        "code": "trade_count_ok",
+        "message": "280 trades: adequate sample size."
+      },
+      {
+        "level": "ok",
+        "code": "recovery_factor_ok",
+        "message": "Recovery factor 2.55: profit comfortably exceeds drawdown."
+      },
+      {
+        "level": "ok",
+        "code": "consecutive_loss_ok",
+        "message": "Worst losing streak (1502.10) is a modest fraction of net profit."
+      }
+    ]
+  }
+}

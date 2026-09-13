@@ -1,0 +1,76 @@
+{
+  "report": "sample_report_old.html",
+  "report_path": "reports/samples/sample_report_old.html",
+  "metrics": {
+    "total_net_profit": 2145.9,
+    "gross_profit": 9880.4,
+    "gross_loss": -7734.5,
+    "profit_factor": 1.28,
+    "expected_payoff": 10.61,
+    "recovery_factor": null,
+    "sharpe_ratio": null,
+    "absolute_drawdown": 845.2,
+    "maximal_drawdown": 3102.75,
+    "relative_drawdown": 2860.15,
+    "total_trades": 202,
+    "total_deals": null,
+    "profit_trades": 109,
+    "loss_trades": 93,
+    "largest_profit_trade": 388.0,
+    "largest_loss_trade": -402.5,
+    "average_profit_trade": 90.65,
+    "average_loss_trade": -83.17,
+    "max_consecutive_wins": 7,
+    "max_consecutive_losses": 6,
+    "maximal_drawdown_pct": 27.9,
+    "maximal_drawdown_money": 3102.75,
+    "relative_drawdown_pct": 24.3,
+    "relative_drawdown_money": 2860.15,
+    "absolute_drawdown_money": 845.2,
+    "win_rate_pct": 53.96,
+    "profit_trades_count": 109,
+    "loss_trades_count": 93,
+    "max_consecutive_wins_count": 7,
+    "max_consecutive_wins_money": 988.2,
+    "max_consecutive_losses_count": 6,
+    "max_consecutive_losses_money": -1410.6
+  },
+  "trade_table": {
+    "count": 0,
+    "profit_column_found": false,
+    "aggregate": null,
+    "rows_truncated": false,
+    "rows_kept": 0,
+    "rows": []
+  },
+  "diagnosis": {
+    "verdict": "NEEDS IMPROVEMENT (warnings present)",
+    "flags": [
+      {
+        "level": "ok",
+        "code": "net_profit_positive",
+        "message": "Net profit is positive (2145.90)."
+      },
+      {
+        "level": "warn",
+        "code": "drawdown_high",
+        "message": "Relative drawdown 24.30% >= 20% (elevated). Consider tighter risk / smaller lots."
+      },
+      {
+        "level": "info",
+        "code": "profit_factor_ok",
+        "message": "Profit factor 1.28 is acceptable but not strong."
+      },
+      {
+        "level": "ok",
+        "code": "trade_count_ok",
+        "message": "202 trades: adequate sample size."
+      },
+      {
+        "level": "warn",
+        "code": "consecutive_loss_risk",
+        "message": "Worst losing streak (1410.60) is 66% of net profit: a single bad run can erase most gains."
+      }
+    ]
+  }
+}
