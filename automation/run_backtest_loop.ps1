@@ -156,6 +156,34 @@ function Invoke-AndWait {
     return $p.ExitCode
 }
 
+# ------------------------------------------------------------------------------
+# Run git and decide success by EXIT CODE ONLY.
+#
+# git writes plenty of NORMAL, non-error text to stderr (e.g. "Already on
+# 'main'", "Your branch is up to date", clone/pull progress). With
+# $ErrorActionPreference = 'Stop', piping `git ... 2>&1` would turn that benign
+# stderr into a TERMINATING error and abort the script even though git actually
+# succeeded. To avoid that we temporarily set $ErrorActionPreference to
+# 'Continue' for the duration of the git call, merge stderr into stdout for
+# logging, and then judge the outcome purely by $LASTEXITCODE. Returns the git
+# exit code.
+# ------------------------------------------------------------------------------
+function Invoke-Git {
+    param([Parameter(Mandatory)] [string[]]$GitArgs)
+
+    $prevEAP = $ErrorActionPreference
+    $ErrorActionPreference = 'Continue'
+    try {
+        # 2>&1 merges git's stderr into the success stream so we can log it;
+        # because EAP is 'Continue' here, stderr records do NOT throw.
+        & git @GitArgs 2>&1 | ForEach-Object { Write-Log ("  git: {0}" -f $_) }
+        $code = $LASTEXITCODE
+    } finally {
+        $ErrorActionPreference = $prevEAP
+    }
+    return $code
+}
+
 Write-Log ("=== GaganEA backtest loop: {0}, RunDate {1} ===" -f $RoundTag, $RunDate) 'STEP'
 Write-Log ("Log file: {0}" -f $LogFile)
 
@@ -189,9 +217,14 @@ try {
     Write-Log "STEP (a) git pull" 'STEP'
     Push-Location -LiteralPath $Config.RepoDir
     try {
-        & git checkout $Config.GitBranch 2>&1 | ForEach-Object { Write-Log $_ }
-        & git pull --ff-only origin $Config.GitBranch 2>&1 | ForEach-Object { Write-Log $_ }
-        if ($LASTEXITCODE -ne 0) {
+        # checkout: "Already on 'main'" is written to stderr but is NOT an error.
+        # Judge by exit code (Invoke-Git handles the stderr-is-not-fatal detail).
+        $coCode = Invoke-Git @('checkout', $Config.GitBranch)
+        if ($coCode -ne 0) {
+            throw ("git checkout {0} failed (exit {1})." -f $Config.GitBranch, $coCode)
+        }
+        $pullCode = Invoke-Git @('pull', '--ff-only', 'origin', $Config.GitBranch)
+        if ($pullCode -ne 0) {
             Write-Log "git pull returned non-zero; continuing with the local checkout." 'WARN'
         }
     } finally {
@@ -366,20 +399,22 @@ try {
     try {
         # Stage the report and any summary the analyzer produced (by name).
         # NOTE: git add of an explicitly-named IGNORED path exits non-zero and
-        # stages nothing, so we MUST check $LASTEXITCODE after each add or a
+        # stages nothing, so we MUST check the exit code after each add or a
         # botched .gitignore would let the artifact silently never get committed.
         # The report .html is never ignored; the per-round .summary.json is
         # kept out of the ignore rule via a negation in .gitignore
         # (!reports/round*.summary.json) so it stages cleanly too.
-        & git add -- "reports/$ReportBaseName.html" 2>&1 | ForEach-Object { Write-Log $_ }
-        if ($LASTEXITCODE -ne 0) {
-            throw "git add of reports/$ReportBaseName.html failed (exit $LASTEXITCODE); is it ignored by .gitignore? (see SETUP.md section 9)."
+        # All git calls go through Invoke-Git so git's benign stderr (progress,
+        # "up to date", etc.) is NOT mistaken for a fatal error.
+        $addCode = Invoke-Git @('add', '--', "reports/$ReportBaseName.html")
+        if ($addCode -ne 0) {
+            throw "git add of reports/$ReportBaseName.html failed (exit $addCode); is it ignored by .gitignore? (see SETUP.md section 9)."
         }
         $summaryRel = "reports/$ReportBaseName.summary.json"
         if (Test-Path -LiteralPath (Join-Path $Config.RepoDir $summaryRel)) {
-            & git add -- $summaryRel 2>&1 | ForEach-Object { Write-Log $_ }
-            if ($LASTEXITCODE -ne 0) {
-                throw "git add of $summaryRel failed (exit $LASTEXITCODE). It exists but git refused to stage it, most likely an .gitignore rule shadows reports/*.summary.json; ensure the '!reports/round*.summary.json' negation is present (see SETUP.md section 9)."
+            $addSumCode = Invoke-Git @('add', '--', $summaryRel)
+            if ($addSumCode -ne 0) {
+                throw "git add of $summaryRel failed (exit $addSumCode). It exists but git refused to stage it, most likely an .gitignore rule shadows reports/*.summary.json; ensure the '!reports/round*.summary.json' negation is present (see SETUP.md section 9)."
             }
         }
 
@@ -390,10 +425,13 @@ try {
         } else {
             $prettyDate = '{0}-{1}-{2}' -f $RunDate.Substring(0,4), $RunDate.Substring(4,2), $RunDate.Substring(6,2)
             $msg = "Round {0} backtest report ({1})" -f $RoundNumber, $prettyDate
-            & git commit -m $msg 2>&1 | ForEach-Object { Write-Log $_ }
-            & git push origin $Config.GitBranch 2>&1 | ForEach-Object { Write-Log $_ }
-            if ($LASTEXITCODE -ne 0) {
-                throw "git push failed (see log; check auth / credential helper - SETUP.md section 9)."
+            $commitCode = Invoke-Git @('commit', '-m', $msg)
+            if ($commitCode -ne 0) {
+                throw "git commit failed (exit $commitCode; see log)."
+            }
+            $pushCode = Invoke-Git @('push', 'origin', $Config.GitBranch)
+            if ($pushCode -ne 0) {
+                throw "git push failed (exit $pushCode; check auth / credential helper - SETUP.md section 9)."
             }
             Write-Log ("Committed + pushed: {0}" -f $msg)
         }
