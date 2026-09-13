@@ -184,6 +184,47 @@ function Invoke-Git {
     return $code
 }
 
+# ------------------------------------------------------------------------------
+# On a no-report failure, tail the newest MT5 Tester log so the failure is
+# diagnosable in one shot. MT5 build 6191 writes tester agent logs under
+# <MT5DataDir>\Tester\logs\*.log and general logs under <MT5DataDir>\logs\*.log.
+# We pick the file with the newest LastWriteTime across BOTH locations and log
+# its last ~40 lines. Non-crashing: if no log exists we just log a WARN.
+# ------------------------------------------------------------------------------
+function Write-NewestTesterLogTail {
+    param(
+        [Parameter(Mandatory)] [string]$Mt5DataDir,
+        [int]$TailLines = 40
+    )
+    try {
+        $logDirs = @(
+            (Join-Path $Mt5DataDir 'Tester\logs'),
+            (Join-Path $Mt5DataDir 'logs')
+        )
+        $logs = @()
+        foreach ($d in $logDirs) {
+            if (Test-Path -LiteralPath $d) {
+                $logs += Get-ChildItem -LiteralPath $d -Filter '*.log' -File -ErrorAction SilentlyContinue
+            }
+        }
+        if (-not $logs -or $logs.Count -eq 0) {
+            Write-Log ("No MT5 tester log found under {0} or {1}." -f $logDirs[0], $logDirs[1]) 'WARN'
+            return
+        }
+        $newest = $logs | Sort-Object LastWriteTime -Descending | Select-Object -First 1
+        Write-Log ("Tailing newest tester log ({0} lines): {1}" -f $TailLines, $newest.FullName) 'WARN'
+        $tail = Get-Content -LiteralPath $newest.FullName -Tail $TailLines -ErrorAction SilentlyContinue
+        if (-not $tail) {
+            $tail = Get-Content -LiteralPath $newest.FullName -ErrorAction SilentlyContinue | Select-Object -Last $TailLines
+        }
+        foreach ($t in $tail) {
+            Write-Log ("  tlog: {0}" -f $t)
+        }
+    } catch {
+        Write-Log ("could not read tester log (non-fatal): {0}" -f $_.Exception.Message) 'WARN'
+    }
+}
+
 Write-Log ("=== GaganEA backtest loop: {0}, RunDate {1} ===" -f $RoundTag, $RunDate) 'STEP'
 Write-Log ("Log file: {0}" -f $LogFile)
 
@@ -305,21 +346,27 @@ try {
 # STEP (d) - generate runtime .ini and run terminal64 headlessly, WAIT for exit
 # ==============================================================================
 $ReportBaseName = "{0}_{1}" -f $RoundTag, $RunDate     # e.g. round03_20260911
-$ReportInMt5    = Join-Path $ExpertsDir ("..\..\{0}.html" -f $ReportBaseName)  # MT5 data root
-$ReportInMt5    = [System.IO.Path]::GetFullPath($ReportInMt5)
 $RuntimeIni     = Join-Path $LogDir ("tester_{0}_{1}.ini" -f $RoundTag, $LogStamp)
+$runStart       = $null                                 # set right before launch
 try {
     Write-Log "STEP (d) generate runtime tester .ini and run terminal64" 'STEP'
 
     $tpl = Get-Content -LiteralPath $TemplateIni -Raw
     # Expert path is relative to MQL5\Experts, no extension (MT5 convention).
     $tpl = $tpl.Replace('__EXPERT_PATH__', $Config.ExpertName)
-    $tpl = $tpl.Replace('__REPORT_PATH__', $ReportInMt5)
+    # Report= is a BARE filename (no dir, no ext). On build 6191 MT5 writes it
+    # relative to the data-folder ROOT (as .htm, sometimes .html) and commonly
+    # ignores an absolute path - so we hand it just the base name and search for
+    # the produced file(s) in step (e).
+    $tpl = $tpl.Replace('__REPORT_NAME__', $ReportBaseName)
     # Write the runtime ini (MT5 reads /config ini reliably as ANSI/UTF-8).
     Set-Content -LiteralPath $RuntimeIni -Value $tpl -Encoding ASCII
     Write-Log ("Runtime ini: {0}" -f $RuntimeIni)
-    Write-Log ("Report will be written to: {0}" -f $ReportInMt5)
+    Write-Log ("Report base name: {0} - MT5 writes it (as .htm/.html) under the data-folder root: {1}" -f $ReportBaseName, $Config.MT5DataDir)
 
+    # Capture a run-start timestamp so step (e) can fall back to "any report
+    # written since we launched" if the exact base-name file is not found.
+    $runStart = Get-Date
     $code = Invoke-AndWait -FilePath $Config.Terminal64Exe `
                            -Arguments @(("/config:{0}" -f $RuntimeIni)) `
                            -TimeoutSec $Config.TesterTimeoutSec
@@ -338,22 +385,105 @@ try {
         New-Item -ItemType Directory -Path $ReportsDir -Force | Out-Null
     }
 
-    # MT5 may append .html itself, or write next to the data root. Try both.
-    $candidates = @(
-        $ReportInMt5,
-        ($ReportInMt5 + '.html'),
-        (Join-Path $Config.MT5DataDir ("{0}.html" -f $ReportBaseName))
+    # On build 6191 MT5 writes the report (bare Report= name) RELATIVE TO THE
+    # DATA-FOLDER ROOT, typically as <base>.htm and on some builds <base>.html.
+    # Build an explicit list of PRIMARY candidates under MT5DataDir for both
+    # extensions, plus legacy locations for backward-compat, and LOG each one.
+    $primaryCandidates = @(
+        (Join-Path $Config.MT5DataDir ("{0}.htm"  -f $ReportBaseName)),
+        (Join-Path $Config.MT5DataDir ("{0}.html" -f $ReportBaseName)),
+        # Legacy: older harness assumed the data root via ..\..\ from Experts.
+        (Join-Path $ExpertsDir ("..\..\{0}.htm"  -f $ReportBaseName)),
+        (Join-Path $ExpertsDir ("..\..\{0}.html" -f $ReportBaseName)),
+        (Join-Path $ExpertsDir ("..\..\{0}"      -f $ReportBaseName))
     ) | Select-Object -Unique
 
     $found = $null
-    foreach ($c in $candidates) {
-        if (Test-Path -LiteralPath $c) { $found = $c; break }
+    foreach ($c in $primaryCandidates) {
+        Write-Log ("  checking: {0}" -f $c)
+        if (Test-Path -LiteralPath $c -PathType Leaf) {
+            # Warn (but still accept) if this happy-path candidate predates the
+            # launch - on a same-day rerun that wrote no new report it could be
+            # a stale prior report with the same name masking a stall.
+            if ($runStart) {
+                $lwt = (Get-Item -LiteralPath $c).LastWriteTime
+                if ($lwt -lt $runStart) {
+                    Write-Log ("  WARNING: matched report predates this run's launch ({0} < {1}) - it may be a STALE report from an earlier same-day run, not fresh output. Check the tester log if you expected new results." -f $lwt, $runStart) 'WARN'
+                }
+            }
+            $found = $c; break
+        }
     }
+
+    # No explicit candidate hit: do a RECURSIVE search under MT5DataDir. Prefer
+    # an exact BaseName match on $ReportBaseName; otherwise fall back to any
+    # *.htm/*.html written since we launched terminal64 ($runStart).
     if (-not $found) {
-        throw ("report not found. Looked for: {0}. Check the Report path / MT5 data folder (see SETUP.md section 9)." -f ($candidates -join '  |  '))
+        Write-Log "  no explicit candidate matched; searching recursively under MT5DataDir." 'WARN'
+        # Scope the recursion to the data root plus the folders MT5 actually
+        # writes reports/artifacts into (data root itself, Tester, MQL5\Files,
+        # reports) rather than the ENTIRE data tree - a real install carries
+        # large bases\ (tick history) and Tester cache subtrees whose full
+        # recursive walk would make this failure-path diagnostic slow and
+        # I/O-heavy. -Depth caps how deep each search root is walked.
+        $searchRoots = @(
+            $Config.MT5DataDir,
+            (Join-Path $Config.MT5DataDir 'Tester'),
+            (Join-Path $Config.MT5DataDir 'MQL5\Files'),
+            (Join-Path $Config.MT5DataDir 'reports')
+        ) | Where-Object { Test-Path -LiteralPath $_ } | Select-Object -Unique
+        $all = @()
+        foreach ($root in $searchRoots) {
+            $all += Get-ChildItem -LiteralPath $root -Recurse -Depth 3 -Include *.htm, *.html -File -ErrorAction SilentlyContinue
+        }
+        $all = $all | Sort-Object FullName -Unique
+
+        # (1) exact base-name match, but only if the file was written since we
+        # launched terminal64 - otherwise a same-day rerun that wrote NO new
+        # report could silently re-adopt a stale prior report with the same
+        # roundNN_YYYYMMDD name and mask the stall as a false success.
+        foreach ($f in $all) {
+            if ($f.BaseName -ieq $ReportBaseName) {
+                if ($runStart -and $f.LastWriteTime -ge $runStart) {
+                    Write-Log ("  candidate (exact base-name match, fresh): {0}  [LastWriteTime {1}]" -f $f.FullName, $f.LastWriteTime)
+                    $found = $f.FullName
+                    break
+                } else {
+                    Write-Log ("  skipping stale exact base-name match (predates run start {0}): {1}  [LastWriteTime {2}]" -f $runStart, $f.FullName, $f.LastWriteTime) 'WARN'
+                }
+            }
+        }
+
+        # (2) looser fallback: newest *.htm/*.html written since the run started.
+        if (-not $found -and $runStart) {
+            $recent = $all |
+                Where-Object { $_.LastWriteTime -ge $runStart } |
+                Sort-Object LastWriteTime -Descending
+            foreach ($f in $recent) {
+                Write-Log ("  candidate (written since run start {0}): {1}  [LastWriteTime {2}]" -f $runStart, $f.FullName, $f.LastWriteTime)
+            }
+            if ($recent -and @($recent).Count -gt 0) {
+                $found = @($recent)[0].FullName
+                Write-Log ("  selected newest report written since run start: {0}" -f $found)
+            } else {
+                Write-Log "  no *.htm/*.html was written under MT5DataDir since the run started." 'WARN'
+            }
+        }
     }
+
+    if (-not $found) {
+        # Self-diagnosing failure: surface the newest tester log before failing.
+        Write-Log "No report file was produced by MT5. Tailing the newest tester log:" 'ERROR'
+        Write-NewestTesterLogTail -Mt5DataDir $Config.MT5DataDir
+        Fail (("report not found. Primary candidates checked: {0}. " -f ($primaryCandidates -join '  |  ')) +
+              "MT5 exited without writing a report - most often the tester pass never actually STARTED. " +
+              "Confirm XAUUSD M1 real-tick history for 2026.03.01-2026.09.11 is downloaded (Model=4 needs it), " +
+              "try the Model=1 diagnostic fallback (SETUP.md section 5), and check the tester log guidance in SETUP.md section 10.")
+    }
+
+    # Normalize .htm -> .html on copy (analyzer reads HTML by content).
     Copy-Item -LiteralPath $found -Destination $FinalReport -Force
-    Write-Log ("Report -> {0}" -f $FinalReport)
+    Write-Log ("Report {0} -> {1}" -f $found, $FinalReport)
 } catch {
     Fail ("report-locate step failed: {0}" -f $_.Exception.Message)
 }
@@ -408,13 +538,13 @@ try {
         # "up to date", etc.) is NOT mistaken for a fatal error.
         $addCode = Invoke-Git @('add', '--', "reports/$ReportBaseName.html")
         if ($addCode -ne 0) {
-            throw "git add of reports/$ReportBaseName.html failed (exit $addCode); is it ignored by .gitignore? (see SETUP.md section 9)."
+            throw "git add of reports/$ReportBaseName.html failed (exit $addCode); is it ignored by .gitignore? (see SETUP.md section 10)."
         }
         $summaryRel = "reports/$ReportBaseName.summary.json"
         if (Test-Path -LiteralPath (Join-Path $Config.RepoDir $summaryRel)) {
             $addSumCode = Invoke-Git @('add', '--', $summaryRel)
             if ($addSumCode -ne 0) {
-                throw "git add of $summaryRel failed (exit $addSumCode). It exists but git refused to stage it, most likely an .gitignore rule shadows reports/*.summary.json; ensure the '!reports/round*.summary.json' negation is present (see SETUP.md section 9)."
+                throw "git add of $summaryRel failed (exit $addSumCode). It exists but git refused to stage it, most likely an .gitignore rule shadows reports/*.summary.json; ensure the '!reports/round*.summary.json' negation is present (see SETUP.md section 10)."
             }
         }
 
@@ -431,7 +561,7 @@ try {
             }
             $pushCode = Invoke-Git @('push', 'origin', $Config.GitBranch)
             if ($pushCode -ne 0) {
-                throw "git push failed (exit $pushCode; check auth / credential helper - SETUP.md section 9)."
+                throw "git push failed (exit $pushCode; check auth / credential helper - SETUP.md section 10)."
             }
             Write-Log ("Committed + pushed: {0}" -f $msg)
         }
@@ -443,5 +573,5 @@ try {
 }
 
 Write-Log ("=== DONE: {0} ({1}). Report: {2} ===" -f $RoundTag, $RunDate, $FinalReport) 'STEP'
-Write-Log "Reminder: sanity-check this round by hand (see SETUP.md section 10) to avoid overfitting; goal is under 15% drawdown on XAUUSD."
+Write-Log "Reminder: sanity-check this round by hand (see SETUP.md section 11) to avoid overfitting; goal is under 15% drawdown on XAUUSD."
 exit 0
