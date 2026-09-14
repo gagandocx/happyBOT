@@ -55,28 +55,19 @@ REM  STEP 1 - update from GitHub
 REM ==========================================================================
 echo [1/3] Updating from origin/%BRANCH% ...
 
-REM Commit any local changes first so the merge can't jam on them.
-git diff --quiet
-set "UNSTAGED=!ERRORLEVEL!"
-git diff --cached --quiet
-set "STAGED=!ERRORLEVEL!"
-set "UNTRACKED="
-for /f "delims=" %%f in ('git ls-files --others --exclude-standard') do set "UNTRACKED=1"
-
-if "!UNSTAGED!"=="1" set "NEEDCOMMIT=1"
-if "!STAGED!"=="1" set "NEEDCOMMIT=1"
-if defined UNTRACKED set "NEEDCOMMIT=1"
-
-if defined NEEDCOMMIT (
-  echo       Local changes detected - committing them first so the update is clean...
-  git add -A
-  git commit -m "Local changes before update (auto-saved by update.bat)"
-)
+REM Commit any local changes first so the merge cannot jam on them. We just
+REM run "git add -A" + "git commit"; if there is nothing to commit, git exits
+REM non-zero and prints "nothing to commit" - which is fine, so we do NOT test
+REM its exit code (that avoids fragile parenthesized ERRORLEVEL checks that were
+REM mis-parsing here). Then pull with an automatic merge, no editor.
+git add -A
+git commit -m "Local changes before update (auto-saved by update.bat)"
 
 git pull --no-rebase --no-edit origin %BRANCH%
-if not "!ERRORLEVEL!"=="0" (
+set "PULLRC=!ERRORLEVEL!"
+if not "!PULLRC!"=="0" (
   echo.
-  echo [ERROR] Update did not complete cleanly (likely a real merge conflict).
+  echo [ERROR] Update did not complete cleanly ^(likely a real merge conflict^).
   echo         Nothing was lost. Send Kiro the output above, or run:
   echo           git merge --abort
   echo         then try update.bat again.
@@ -153,14 +144,14 @@ if "!ERRORLEVEL!"=="0" (
   echo.
   echo [ERROR] Compile reported errors. See the log:
   echo         %COMPILE_LOG%
-  echo         (Send it to Kiro to fix.)
+  echo         ^(Send it to Kiro to fix.^)
   echo.
   type "%COMPILE_LOG%"
   pause
   endlocal
   exit /b 1
 )
-echo       Compile OK (no errors found in the log).
+echo       Compile OK ^(no errors found in the log^).
 
 :done
 echo.
