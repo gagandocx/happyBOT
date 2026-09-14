@@ -1,0 +1,71 @@
+{
+  "report": "round01_20260914.html",
+  "report_path": "C:\\Users\\gagan\\happyBOT\\reports\\round01_20260914.html",
+  "metrics": {
+    "total_net_profit": null,
+    "gross_profit": null,
+    "gross_loss": null,
+    "profit_factor": null,
+    "expected_payoff": null,
+    "recovery_factor": null,
+    "sharpe_ratio": null,
+    "absolute_drawdown": null,
+    "maximal_drawdown": null,
+    "relative_drawdown": null,
+    "total_trades": null,
+    "total_deals": null,
+    "profit_trades": null,
+    "loss_trades": null,
+    "largest_profit_trade": null,
+    "largest_loss_trade": null,
+    "average_profit_trade": null,
+    "average_loss_trade": null,
+    "max_consecutive_wins": null,
+    "max_consecutive_losses": null,
+    "maximal_drawdown_pct": null,
+    "maximal_drawdown_money": null,
+    "relative_drawdown_pct": null,
+    "relative_drawdown_money": null,
+    "absolute_drawdown_money": null,
+    "win_rate_pct": null,
+    "profit_trades_count": null,
+    "loss_trades_count": null,
+    "max_consecutive_wins_count": null,
+    "max_consecutive_wins_money": null,
+    "max_consecutive_losses_count": null,
+    "max_consecutive_losses_money": null
+  },
+  "trade_table": {
+    "count": 0,
+    "profit_column_found": false,
+    "aggregate": null,
+    "rows_truncated": false,
+    "rows_kept": 0,
+    "rows": []
+  },
+  "diagnosis": {
+    "verdict": "INCONCLUSIVE (insufficient metrics parsed)",
+    "flags": [
+      {
+        "level": "info",
+        "code": "net_profit_missing",
+        "message": "Net profit not found in report."
+      },
+      {
+        "level": "info",
+        "code": "drawdown_missing",
+        "message": "Drawdown % not found in report; cannot assess DD."
+      },
+      {
+        "level": "info",
+        "code": "profit_factor_missing",
+        "message": "Profit factor not found in report."
+      },
+      {
+        "level": "info",
+        "code": "trade_count_missing",
+        "message": "Total trades not found in report."
+      }
+    ]
+  }
+}
