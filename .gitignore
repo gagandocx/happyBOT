@@ -40,3 +40,7 @@ data/*.csv
 
 # Local compile log produced by update.bat (machine-specific, not tracked)
 update_compile.log
+
+# Compiled MQL5 binaries are build artifacts - never commit them (they cause
+# "which version is running" confusion; the .mq5 source is the truth).
+*.ex5
