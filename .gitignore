@@ -37,3 +37,6 @@ data/joined.bin
 data/*.zip
 data/**/*.csv
 data/*.csv
+
+# Local compile log produced by update.bat (machine-specific, not tracked)
+update_compile.log
