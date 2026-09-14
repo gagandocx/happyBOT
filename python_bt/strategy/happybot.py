@@ -57,6 +57,22 @@ APPROXIMATIONS vs MQL5 (be honest, this is UNVERIFIABLE in-sandbox):
     documented constant (CONFIRM vs broker).
   * The 11 tuner-managed params are snapped/clamped/order-repaired through
     automation/tuner/params.validate so the Python and MT5 param spaces agree.
+  * OMITTED EARLY-EXIT SUBSYSTEMS (calibration residual, FEAT-002). The v2.13 EA
+    that produced the MT5 truth report runs Use_AMA_Exit, Use_Reversal_Exit,
+    Use_Basket_Trailing and Use_Master_EP = true. These close positions EARLY on
+    trend-flip / reversal / basket-lock signals. They are intentionally NOT
+    ported (they need AMA/MACD/ADX/volume indicators the port does not build).
+    Their absence is the measured residual after v2.13-default calibration: the
+    port's trades run to their ATR TP/SL/T3 instead of being cut early, so the
+    port shows FEWER trades (positions occupy the Max_Concurrent_Positions slots
+    longer) with LARGER avg win AND avg loss (~1.7x) than MT5. See FEAT-002
+    findings for the before/after numbers. Closing this residual requires porting
+    those EA exit subsystems, which is out of scope for the calibration fix.
+
+DEFAULTS: default_params() reproduces the EA v2.13 COMPILED-IN inputs (the ones
+that generated data/ReportTester-470903.html), which differ from the older v2.11
+tuner defaults on Entry_Cooldown_Bars, Pullback_Lookback, RSI_Buy_Max,
+RSI_Sell_Min and ATR_TP_Mult (see default_params for the specific overrides).
 
 Stdlib only. Pure ASCII. Target Python 3.9+.
 """
@@ -105,7 +121,15 @@ class HappyBotStrategy(Strategy):
         p = {}  # type: Dict[str, object]
         # -- 11 tuner-managed params (defaults from automation/tuner/params). --
         p.update(tuner_params.defaults())
-        # -- Round 4 structural params (HappyBot inputs). --
+        # -- Round 4 structural params. --
+        # CALIBRATION NOTE (FEAT-002): the MT5 truth report
+        # (data/ReportTester-470903.html) was produced by the EA running its
+        # COMPILED-IN v2.13 input defaults. The tuner's defaults() are the OLDER
+        # v2.11 vector, so several values below are OVERRIDDEN to the EA v2.13
+        # inputs (see HappyBot.mq5 input block ~51-200) so this port reproduces
+        # the run that generated the MT5 truth. The differences that materially
+        # changed trade count/exits: Entry_Cooldown_Bars 3->1, Pullback_Lookback
+        # 6->10, RSI_Buy_Max 68->75, RSI_Sell_Min 32->25, ATR_TP_Mult 2.5->3.5.
         p["EMA_Period_HTF"] = 200
         p["EMA_Period_CTF"] = 200
         p["Max_LotSize"] = 10.0
@@ -119,21 +143,25 @@ class HappyBotStrategy(Strategy):
         p["ATR_Max_Points"] = 4000.0
         p["Use_ATR_Dynamic_SLTP"] = True
         p["ATR_SL_Mult"] = 1.5
-        p["ATR_TP_Mult"] = 2.5
+        p["ATR_TP_Mult"] = 3.5  # EA v2.13 input (was 2.5 in v2.11)
         p["Use_ATR_Scaled_Tiers"] = True
         p["ATR_T1_Mult"] = 0.8
         p["ATR_T2_Mult"] = 1.5
         p["ATR_T3_Mult"] = 2.2
         p["Use_Confluence_Entry"] = True
         p["RSI_Entry_Period"] = 14
-        p["RSI_Buy_Max"] = 68.0
-        p["RSI_Sell_Min"] = 32.0
-        p["Pullback_Lookback"] = 6
+        p["RSI_Buy_Max"] = 75.0  # EA v2.13 input (was 68 in v2.11)
+        p["RSI_Sell_Min"] = 25.0  # EA v2.13 input (was 32 in v2.11)
+        p["Pullback_Lookback"] = 10  # EA v2.13 input (was 6 in v2.11)
         p["Use_Session_Filter"] = True
         p["Session_Start_Hour"] = 7
         p["Session_End_Hour"] = 20
         p["Skip_Rollover_Hour"] = True
         p["Rollover_Hour"] = 0
+        # Entry_Cooldown_Bars is tuner-managed (default 3 in v2.11); the EA v2.13
+        # input is 1. Override AFTER tuner defaults so the calibration baseline
+        # matches the MT5 run. The tuner still searches its own [0,20] range.
+        p["Entry_Cooldown_Bars"] = 1  # EA v2.13 input (was 3 in v2.11)
         return p
 
     def __init__(self, params: Optional[Dict] = None):
@@ -198,8 +226,14 @@ class HappyBotStrategy(Strategy):
         if resume["ema_ctf"] is None or resume["close"] <= resume["ema_ctf"]:
             return False
         lookback = int(pr["Pullback_Lookback"])
-        # Bars before the resume bar, up to `lookback` of them.
-        prior = self._recent[:-1][-lookback:]
+        # EA BullPullbackResume scans bars i=2..Pullback_Lookback (indices are
+        # series-order: 0 = forming bar, 1 = resume bar = _recent[-1]). That is
+        # (lookback - 1) bars immediately BEFORE the resume bar: EA index 2 =
+        # _recent[-2] ... EA index lookback = _recent[-lookback]. Slicing the
+        # last (lookback - 1) of _recent[:-1] reproduces exactly that window and
+        # fixes a prior off-by-one that scanned one extra (too-old) bar.
+        span = max(lookback - 1, 0)
+        prior = self._recent[:-1][-span:] if span else []
         for b in prior:
             if b["ema_ctf"] is not None and b["low"] <= b["ema_ctf"]:
                 return True
@@ -213,7 +247,10 @@ class HappyBotStrategy(Strategy):
         if resume["ema_ctf"] is None or resume["close"] >= resume["ema_ctf"]:
             return False
         lookback = int(pr["Pullback_Lookback"])
-        prior = self._recent[:-1][-lookback:]
+        # See _bull_pullback_resume: EA scans bars i=2..Pullback_Lookback, i.e.
+        # the (lookback - 1) bars immediately before the resume bar.
+        span = max(lookback - 1, 0)
+        prior = self._recent[:-1][-span:] if span else []
         for b in prior:
             if b["ema_ctf"] is not None and b["high"] >= b["ema_ctf"]:
                 return True
@@ -240,14 +277,18 @@ class HappyBotStrategy(Strategy):
         lots = min(lots, float(pr["Max_LotSize"]))
         return round(lots, 2)
 
-    def _distance_ok(self, side: str, mid: float, ctx) -> bool:
-        """DistanceCheckOK port: reject a same-side entry too close to an open one."""
+    def _distance_ok(self, side: str, ref_price: float, ctx) -> bool:
+        """DistanceCheckOK port: reject a same-side entry too close to an open one.
+
+        The EA compares SYMBOL_BID against each same-side open position's open
+        price; ref_price is the live new-bar bid (see _open_trade).
+        """
         pr = self.params
         min_dist = int(pr["Min_Trade_Distance"])
         for pos in ctx.positions:
             if pos.side != side:
                 continue
-            if abs(mid - pos.entry_price) / config.POINT_SIZE < min_dist:
+            if abs(ref_price - pos.entry_price) / config.POINT_SIZE < min_dist:
                 return False
         return True
 
@@ -334,11 +375,27 @@ class HappyBotStrategy(Strategy):
         # Both trend EMAs are ready: the strategy is out of warm-up.
         self._warmed_up = True
 
-        htf_bull = mid > ema_htf
-        htf_bear = mid < ema_htf
-        ctf_bull = mid > ema_ctf
-        ctf_bear = mid < ema_ctf
-        dist = abs(mid - ema_ctf) / config.POINT_SIZE
+        # EA OpenTrade reads SYMBOL_BID (the live new-bar tick) for the trend and
+        # EMA-distance gates, NOT the closed bar's mid. In tick mode on_bar fires
+        # on the first tick of the new bar, so ctx.bid IS that new-bar bid and is
+        # the faithful analog. Fall back to the closed-bar mid only when a live
+        # quote is not available (no ticks yet).
+        #
+        # BAR-MODE BEHAVIORAL NOTE (calibration polish, FEAT-003): in bar mode
+        # ctx.bid is the CLOSED bar's last_bid (a real nonzero value, see
+        # bars.py / engine.py), so the getattr(...) is truthy and bar mode now
+        # uses the closed bar's LAST BID here instead of the bar mid for the
+        # trend / EMA-distance / de-clustering gates. This is a deliberate but
+        # real shift to the fast-sweep (bar-mode) path introduced with the
+        # mid->bid switch: bar-mode sweep numbers produced BEFORE that switch
+        # (which gated on the mid) are not strictly comparable on the gate
+        # boundary. Tick mode is unaffected and remains the calibration basis.
+        ref = ctx.bid if getattr(ctx, "bid", 0) else mid
+        htf_bull = ref > ema_htf
+        htf_bear = ref < ema_htf
+        ctf_bull = ref > ema_ctf
+        ctf_bear = ref < ema_ctf
+        dist = abs(ref - ema_ctf) / config.POINT_SIZE
         far_enough = dist >= int(pr["Min_EMA_Distance"])
 
         # Concurrent-exposure cap.
@@ -377,7 +434,7 @@ class HappyBotStrategy(Strategy):
                 )
             else:
                 buy_ok = False  # legacy pattern gate not ported
-            if buy_ok and self._distance_ok("buy", mid, ctx):
+            if buy_ok and self._distance_ok("buy", ref, ctx):
                 self._enter("buy", ctx, atr, min_stop)
 
         # SELL
@@ -388,7 +445,7 @@ class HappyBotStrategy(Strategy):
                 )
             else:
                 sell_ok = False
-            if sell_ok and self._distance_ok("sell", mid, ctx):
+            if sell_ok and self._distance_ok("sell", ref, ctx):
                 self._enter("sell", ctx, atr, min_stop)
 
     def _enter(self, side: str, ctx, atr: Optional[float], min_stop: float) -> None:

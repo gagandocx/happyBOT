@@ -168,12 +168,19 @@ broker (Fusion Markets) and MT5 symbol spec before results are trusted.
   (SYMBOL_POINT).
 - TICK_SIZE = 0.01 - CONFIRM. Smallest tradable price change
   (SYMBOL_TRADE_TICK_SIZE).
-- CONTRACT_SIZE = 100 oz per 1.0 lot - CONFIRM (SYMBOL_TRADE_CONTRACT_SIZE).
-- TICK_VALUE = 1.00 USD per TICK_SIZE per 1.0 lot - CONFIRM
-  (SYMBOL_TRADE_TICK_VALUE). Derived from 100 oz: a 0.01 move = 1.00 USD per
-  lot. Drives P&L parity directly.
-- COMMISSION_PER_LOT_PER_SIDE = 3.5 USD - CONFIRM vs the user's Fusion tier.
-  Charged on both entry and exit.
+- CONTRACT_SIZE = 100 oz per 1.0 lot - CONFIRMED via MT5 deal reconciliation
+  (see "Calibration vs MT5 (Round 7)" below): 1.00 USD per 0.01 move per 0.01
+  lot implies 100 oz per 1.0 lot.
+- TICK_VALUE = 1.00 USD per TICK_SIZE per 1.0 lot - CONFIRMED via MT5 deal
+  reconciliation. Sample deal: buy 0.01 @ 4166.33 -> sell 0.01 @ 4164.97 = a
+  -1.36 price move reported as exactly -1.36 USD. Across all 209 trades the
+  calibration harness derives 1.0000 USD per 1.00 move per 0.01 lot (max abs
+  error 0.0000, tol 0.02). Drives P&L parity directly.
+- COMMISSION_PER_LOT_PER_SIDE = 3.00 USD - CONFIRMED via MT5 deal reconciliation.
+  Every 0.01-lot deal in the report was charged exactly -0.03 (3.00/side, i.e.
+  6.00/lot round-turn). 418 deals * 0.03 = 12.54 total; 64.68 gross - 12.54
+  commission - 0.64 swap = 51.50 net, matching the report exactly. Charged on
+  both entry and exit (a partial close is charged on its closed volume only).
 - INITIAL_DEPOSIT = 1000 USD - CONFIRM vs the deposit used in MT5 tests.
 - LEVERAGE = 1:500 - CONFIRM. Not enforced as a margin constraint here.
 - SPREAD SOURCE = per-tick ask - bid, taken directly from each tick - CONFIRM
@@ -206,7 +213,9 @@ broker (Fusion Markets) and MT5 symbol spec before results are trusted.
   indicator values can diverge slightly.
 - H1 EMA CONSTRUCTION - built from M5-sampled hourly closes rather than a real
   broker H1 series.
-- SWAP / ROLLOVER FINANCING - not modeled. Overnight swap is ignored.
+- SWAP / ROLLOVER FINANCING - not modeled, and confirmed immaterial. The whole
+  209-trade MT5 run had a single nonzero swap entry (-0.64 USD total), so a swap
+  model is deliberately omitted.
 - MARGIN / LEVERAGE - leverage is a documented constant but margin is not
   enforced; positions are never rejected for insufficient margin.
 - SPREAD REALISM - spread is exactly the data's ask-bid; live spread widening
@@ -225,6 +234,52 @@ broker (Fusion Markets) and MT5 symbol spec before results are trusted.
   `insufficient warm-up` (with the per-row note beneath the table) whenever a
   config had zero trades AND never finished warming up. Use a slice of at least
   ~200 hours (the full ~1500-hour window warms fine) to get meaningful trades.
+
+## 6b. Calibration vs MT5 (Round 7)
+
+The v2.13 strategy was run in real MT5 (XAUUSD, M1 tester, 2026.07.01-2026.09.01,
+Fusion build 6191; `data/ReportTester-470903.html`) and the Python engine was
+calibrated against it with `python3 -m python_bt.calibrate`. The reconciled
+constants above (TICK_VALUE, CONTRACT_SIZE, COMMISSION) are CONFIRMED from that
+report's real deals, not assumed.
+
+TICK mode is the trustworthy comparison basis. BAR mode checks SL/TP only at
+each bar's closing quote, so it never sees intrabar stop/target hits and is a
+fast-but-optimistic APPROXIMATION (it was ~3x MT5 net here). All calibration
+decisions use tick mode.
+
+Full-window comparison (net of commission; MT5 column is the report summary):
+
+| Metric              | MT5     | Py(bar)  | Py(tick) |
+| ------------------- | ------- | -------- | -------- |
+| Total trades        | 209     | 70       | 129      |
+| Win rate %          | 43.54   | 50.00    | 44.96    |
+| Net profit          | +51.50  | +163.81  | +105.23  |
+| Gross profit        | 410.08  | 346.95   | 468.37   |
+| Gross loss          | -358.58 | -183.14  | -363.14  |
+| Profit factor       | 1.14    | 1.89     | 1.29     |
+| Avg win             | +4.51   | +9.91    | +8.08    |
+| Avg loss            | -2.99   | -5.23    | -5.11    |
+| Max relative DD %   | 5.11    | 3.10     | 5.45     |
+| Largest win         | 14.28   | 17.47    | 16.22    |
+| Largest loss        | -23.65  | -14.24   | -22.92   |
+| Max consec win/loss | 7 / 7   | 4 / 5    | 7 / 9    |
+
+Py(tick) BEFORE the Round 7 fixes was net +9.73, 79 trades, PF 1.04, win 40.51%,
+relDD 6.48%. After the fixes (v2.13 defaults alignment, pullback-resume window
+off-by-one, and using ctx.bid instead of the closed-bar mid for trend/EMA-
+distance/de-clustering) tick mode lands within a few points of MT5 on win rate
+(44.96 vs 43.54), PF (1.29 vs 1.14, in band), and relative DD (5.45 vs 5.11).
+
+RESIDUAL GAP (stated honestly): tick mode still takes ~38% fewer trades (129 vs
+209) and its avg win/avg loss are ~1.7x MT5's. Both trace to the SAME cause: the
+v2.13 EA runs four early-exit subsystems the port intentionally omits
+(Use_AMA_Exit, Use_Reversal_Exit, Use_Basket_Trailing, Use_Master_EP). These cut
+positions early, which shrinks avg win/loss toward MT5's 4.51 / -2.99 and frees
+the Max_Concurrent_Positions=2 slots sooner so more entries fire (toward 209).
+Reproducing them needs AMA/MACD/ADX/volume indicators the port lacks, so that is
+a separate feature, not a calibration tweak. SWAP is immaterial (-0.64 total) and
+is not modeled.
 
 ## 7. MT5 is the source of truth
 

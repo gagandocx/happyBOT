@@ -564,3 +564,82 @@ and robust out-of-sample, *not* raw headline return).
   (trade count, win rate, avg win/loss, net, DD) - fix fill timing/cost/entry
   modeling until Python ~= MT5 - THEN resume hunting on a trustworthy engine.
 - **Report file:** data/ReportTester-470903.html (MT5); reports/pybt/*.results.json (Py).
+
+---
+
+## Round 7 - MT5 calibration (2026-09-14)
+
+- **Goal:** make the Python backtester match the MT5 truth
+  (data/ReportTester-470903.html) before resuming any strategy hunting, so
+  in-sandbox numbers are trustworthy. Built a calibration harness
+  (python_bt/calibrate.py) that parses the MT5 summary + per-deal table, runs
+  the engine on the SAME window in both bar and tick mode, and prints an
+  MT5 vs Py(bar) vs Py(tick) table plus a deal-money reconciliation.
+- **Diagnosis:**
+  - The Round 6 "~6x too optimistic" read was largely a BAR-MODE artifact. Bar
+    mode checks SL/TP only at each bar's closing quote, so it never sees
+    intrabar stop hits and is systematically optimistic. TICK mode is the
+    correct comparison basis. On the same window bar mode was +163.81 while
+    tick mode was +9.73 (vs MT5 +51.50).
+  - The dominant residual was TRADE COUNT (tick 79 vs MT5 209). Root cause was
+    NOT an entry-logic bug but a DEFAULTS MISMATCH: the MT5 report was produced
+    by the EA's compiled-in v2.13 inputs, but the port's default_params() still
+    pulled the older v2.11 tuner vector. Five inputs differed and all suppressed
+    trades / distorted exits. Two genuine port bugs also under-triggered entries.
+- **Fixes made:**
+  - Strategy (default_params): aligned to EA v2.13 compiled-in inputs -
+    Entry_Cooldown_Bars 3 -> 1, Pullback_Lookback 6 -> 10, RSI_Buy_Max 68 -> 75,
+    RSI_Sell_Min 32 -> 25, ATR_TP_Mult 2.5 -> 3.5. (Entry_Cooldown_Bars is
+    tuner-managed and is overridden AFTER tuner defaults, so the tuner still
+    searches its [0,20] range.)
+  - Strategy (pullback-resume window off-by-one): the EA BullPullbackResume /
+    BearPullbackResume scan bars i=2..Pullback_Lookback (lookback-1 bars before
+    the resume bar). The port scanned lookback bars, one too-old bar too many.
+    Fixed both to scan lookback-1 bars.
+  - Engine/strategy basis: trend, EMA-distance and de-clustering now read
+    ctx.bid (the live new-bar tick, matching the EA's SYMBOL_BID reads) instead
+    of the just-closed bar mid. In tick mode on_bar fires on the first tick of
+    the new bar, so ctx.bid is the faithful analog.
+  - Config: TICK_VALUE=1.0, CONTRACT_SIZE=100, COMMISSION_PER_LOT_PER_SIDE=3.0
+    UNCHANGED (already correct); comments now cite the MT5 deal reconciliation.
+    No swap model added.
+- **Before/after (net of commission; tick mode is the calibration basis):**
+
+  | Metric            | Py(bar) | Py(tick) before | Py(tick) after | MT5     |
+  | ----------------- | ------- | --------------- | -------------- | ------- |
+  | Net profit        | +163.81 | +9.73           | +105.23        | +51.50  |
+  | Total trades      | 70      | 79              | 129            | 209     |
+  | Profit factor     | 1.89    | 1.04            | 1.29           | 1.14    |
+  | Win rate %        | 50.00   | 40.51           | 44.96          | 43.54   |
+  | Max relative DD % | 3.10    | 6.48            | 5.45           | 5.11    |
+
+  After the fixes tick mode matches MT5 within a few points on win rate, profit
+  factor (in the 1.05-1.30 band) and relative drawdown.
+- **Reconciled constants (confirmed from real deals):** TICK_VALUE=1.0,
+  CONTRACT_SIZE=100, COMMISSION 3.00/side (6.00/lot round-turn). Sample: buy 0.01
+  @ 4166.33 -> sell 0.01 @ 4164.97 = -1.36 move reported -1.36 USD, i.e. 1.00 USD
+  per 1.00 move per 0.01 lot. 418 deals * 0.03 = 12.54 commission; 64.68 gross -
+  12.54 comm - 0.64 swap = 51.50 net. Swap is a single -0.64 entry over 209
+  trades -> immaterial, not modeled.
+- **Honest residual:** tick mode still takes ~38% fewer trades (129 vs 209) and
+  its avg win/avg loss are ~1.7x MT5's (8.08 / -5.11 vs 4.51 / -2.99). Both trace
+  to the SAME cause: the v2.13 EA runs four early-exit subsystems the port omits
+  (Use_AMA_Exit, Use_Reversal_Exit, Use_Basket_Trailing, Use_Master_EP). They cut
+  positions early, shrinking avg win/loss toward MT5's and freeing the
+  Max_Concurrent_Positions=2 slots so more entries fire. Porting them needs
+  AMA/MACD/ADX/volume indicators the port lacks - a separate feature, not a
+  calibration tweak. The consistent ~0.57x ratio of MT5 to Py avg win and avg
+  loss is the fingerprint of these missing exits.
+- **Tests:** added python_bt/tests/test_calibration.py (intrabar SL/TP tick
+  fill, bar-mode misses the intrabar dip, partial-close commission on closed
+  volume both sides, money conversion matching the reconciliation, v2.13
+  defaults) and python_bt/tests/test_calibrate_parser.py (parses the real MT5
+  report: net 51.50 / 209 trades / win 43.54% / PF 1.14, 209 paired trades sum
+  to net, reconciliation derives ~1.00 USD per 0.01 move per 0.01 lot). All
+  suites green.
+- **Next step:** resume strategy hunting on the now-calibrated engine using TICK
+  mode as the truth basis (bar mode stays for fast first-pass sweeps only), and
+  periodically validate promising candidates on a real MT5 run of the same
+  window.
+- **Report file:** data/ReportTester-470903.html (MT5); calibration harness
+  python_bt/calibrate.py.

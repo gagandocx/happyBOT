@@ -23,18 +23,27 @@ TICK_SIZE = 0.01
 # Account currency (USD) value of one TICK_SIZE move per 1.0 lot.
 # Gold contract is 100 oz, so a $1.00 price move = $100 per 1.0 lot; therefore
 # a 0.01 (one tick) move = $1.00 per 1.0 lot.
-# CONFIRM vs broker (SYMBOL_TRADE_TICK_VALUE). Drives P&L parity.
+# CONFIRMED via MT5 deal reconciliation (FEAT-001/FEAT-002 calibration harness,
+# data/ReportTester-470903.html): e.g. buy 0.01 @ 4166.33 -> sell 0.01 @ 4164.97
+# = -1.36 price move reported as -1.36 USD, i.e. 1.00 USD per 1.00 price move per
+# 0.01 lot. Across all 209 trades the harness derives 1.0000 USD per 1.00 move
+# per 0.01 lot with max abs error 0.0000 (tol 0.02) => TICK_VALUE=1.0 confirmed.
+# Do NOT change.
 TICK_VALUE = 1.0
 
 # Contract size in ounces per 1.0 lot. Gold standard is 100 oz.
-# CONFIRM vs broker (SYMBOL_TRADE_CONTRACT_SIZE).
+# CONFIRMED via the same MT5 deal reconciliation as TICK_VALUE above: 1.00 USD
+# per 0.01 move per 0.01 lot implies 100 oz per 1.0 lot. Do NOT change.
 CONTRACT_SIZE = 100
 
 # Commission charged per 1.0 lot per side (entry and exit each charged).
-# CONFIRMED from the user's real Fusion Markets XAUUSD trade history: every fill
-# was charged exactly 6.00 USD per lot round-turn (0.01 lot -> 0.06, 0.10 -> 0.60,
-# 0.50 -> 3.00, 0.70 -> 4.20, 0.80 -> 4.80). Charging both sides means 3.00/side
-# so the round-turn is 6.00/lot, matching the statement.
+# CONFIRMED via MT5 deal reconciliation (FEAT-001): every 0.01-lot deal in
+# data/ReportTester-470903.html was charged exactly -0.03 (3.00/side, 6.00/lot
+# round-turn). 418 deals * 0.03 = 12.54 total commission; the report reconciles
+# as 64.68 gross profit - 12.54 commission - 0.64 swap = 51.50 net, exactly the
+# reported net. Charging both sides at 3.00 reproduces this. Do NOT change.
+# SWAP is deliberately NOT modeled: the whole 209-trade run had a single nonzero
+# swap entry (-0.64), immaterial to P&L parity, so no swap model is added.
 COMMISSION_PER_LOT_PER_SIDE = 3.0
 
 # Starting account balance in account currency (USD), to mirror the MT5 tests.
