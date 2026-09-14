@@ -1,0 +1,11 @@
+# Windows batch and PowerShell scripts MUST use CRLF line endings, or cmd.exe
+# mis-parses them (symptom: the window opens and instantly closes). These files
+# are authored in a Linux sandbox (LF by default), so force CRLF on checkout.
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.ps1 text eol=crlf
+
+# Everything else: let git handle normally (LF in the repo).
+*.py   text eol=lf
+*.mq5  text
+*.md   text
