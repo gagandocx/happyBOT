@@ -1,6 +1,6 @@
-# GaganEA auto-tuner
+# HappyBot auto-tuner
 
-A small, stdlib-only Python auto-tuner that grinds GaganEA's numeric inputs
+A small, stdlib-only Python auto-tuner that grinds HappyBot's numeric inputs
 toward the best risk-adjusted backtest score, one backtest at a time, and keeps
 the best version it has seen. It runs on YOUR Windows PC as part of a continuous
 loop that compiles the EA, runs the MT5 Strategy Tester, analyzes the report,
@@ -32,7 +32,7 @@ One invocation of `automation/tuner/tuner.py` is ONE idempotent step:
    keyed off the diagnosis (see below).
 4. Validate the proposal (clamp to bounds, snap to step, repair ordering) so an
    invalid EA is NEVER written.
-5. Write the proposal into `GaganEA.mq5` (the `input` default literals), update
+5. Write the proposal into `HappyBot.mq5` (the `input` default literals), update
    `automation/tuner/current_params.json`, write a log line, and persist state.
 
 The continuous loop (`automation/run_tuner_loop.ps1`) wires this into:
@@ -71,7 +71,7 @@ constant to change the drawdown ceiling.
 ## Tunable parameter space
 
 Defined in `automation/tuner/params.py`. Each parameter maps to the EXACT
-`GaganEA.mq5` input name. Bounds and steps are grounded in the v2.11 defaults.
+`HappyBot.mq5` input name. Bounds and steps are grounded in the v2.11 defaults.
 On gold, the `*_Pips` inputs are POINTS.
 
 | Parameter                | Type   | Min   | Max   | Step | v2.11 default |
@@ -106,7 +106,7 @@ Rule-based nudges (in addition to plain coordinate descent):
 
 Before you start the infinite loop, do a single manual pass and eyeball it:
 
-1. Compile and run ONE backtest of the current `GaganEA.mq5` in MetaEditor /
+1. Compile and run ONE backtest of the current `HappyBot.mq5` in MetaEditor /
    the MT5 Strategy Tester (or one pass of `run_backtest_loop.ps1`).
 2. Analyze it: `python3 tools/analyze_report.py <the report>.html`
 3. Run the tuner once, dry, to see what it WOULD do without touching anything:
@@ -116,7 +116,7 @@ Before you start the infinite loop, do a single manual pass and eyeball it:
    ```
 
    Then, if it looks sensible, run it for real (drop `--dry-run`) so it writes
-   the next params into `GaganEA.mq5` and updates the state.
+   the next params into `HappyBot.mq5` and updates the state.
 
 Only after that dry run looks reasonable should you start the continuous loop.
 
@@ -158,7 +158,7 @@ honest about this:
   that note instead.
 
 Scoring and validation behavior are unchanged; this is transparency only. If you
-would rather keep the live 1000 stop, edit `GaganEA.mq5` so the seeded ordering
+would rather keep the live 1000 stop, edit `HappyBot.mq5` so the seeded ordering
 is already legal (for example lower `T3_Pips` to `<= 1000`) BEFORE the first run,
 or accept the wider stop as the tuner's legal starting point.
 
@@ -180,7 +180,7 @@ The loop runs back to back with NO sleep gap. Each cycle: `git pull`, copy the
 EA into MT5, compile (with compile-log parsing), run the tester headless, copy
 the report to `reports/tuner/iterNNNN.html`, analyze it, invoke the tuner, prune
 old HTMLs, and `git add / commit / push` the report + summary +
-`tuner_state.json` + `current_params.json` + `GaganEA.mq5`.
+`tuner_state.json` + `current_params.json` + `HappyBot.mq5`.
 
 STOP the loop by any of:
 
@@ -246,7 +246,7 @@ Report retention:
 ## Reset
 
 To discard the tuning history and re-seed the state from whatever is currently
-compiled into `GaganEA.mq5`:
+compiled into `HappyBot.mq5`:
 
 ```
 python3 automation/tuner/tuner.py --reset

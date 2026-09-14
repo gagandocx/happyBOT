@@ -1,6 +1,6 @@
 @echo off
 REM ==========================================================================
-REM  GaganEA CONTINUOUS auto-tuner loop - double-click wrapper
+REM  HappyBot CONTINUOUS auto-tuner loop - double-click wrapper
 REM  for run_tuner_loop.ps1
 REM ==========================================================================
 REM  Launches the PowerShell auto-tuner harness in the SAME folder as this

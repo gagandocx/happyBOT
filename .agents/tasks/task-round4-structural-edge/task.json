@@ -1,0 +1,14 @@
+{
+  "task_id": "task-round4-structural-edge",
+  "task_description": "Round 4: structural entry+exit redesign of GaganEA.mq5 (v2.11 -> v2.12) to attack the negative edge (PF 0.58 < 1, avg loss 1.23 > avg win 0.70). Replace the low-conviction pattern-zoo entry gate with a confluence gate (HTF+CTF trend agreement + ATR volatility-regime filter + EMA-pullback-and-resume with RSI confirmation + session/hour filter) and add optional ATR-based dynamic SL/TP enforcing a core reward:risk >= ~1.5 so winners can structurally exceed losers, while keeping the conservative-DD posture (Risk_Percent 1.0, concurrent cap, real stops). New logic is additive/reversible via master switches. Version bumped to 2.12. Append a Round 4 entry to ITERATION_LOG.md. The 11 tuner-managed inputs keep exact names/types. This is an experiment: no performance measurable in-sandbox; no invented numbers; compile+backtest validated by the user's next MT5 run.",
+  "status": "completed",
+  "feature_order": ["FEAT-001"],
+  "blocked_reason": null,
+  "verification": {
+    "build": "skipped",
+    "tests": "pass",
+    "test_quality": "pass",
+    "docker_build": "skipped",
+    "summary": "No MQL5 compiler / MT5 in sandbox so EA compile + backtest are NOT verifiable here and must be run by the user on Windows MT5 (build 6191, XAUUSD). In-sandbox checks all pass: grep -c '2.11'=0; all 11 tuner inputs single-line with unchanged types; brace delta 0; paren delta 0; non-ASCII only on the 2 pre-existing dashboard comment lines (1649/1652), no new ones; atr_handle+rsi_entry_handle created guarded in OnInit and released in OnDeinit; new Copy* calls guarded. Tuner unittest suite 38 OK and tools suite 16 OK. CRITICAL compatibility proof: the live mq5_rewriter reads all 11 tuner inputs from the edited EA and rewrites byte-identically with the same values, so the tuner regex is intact. test_quality: the tuner tests exercise the rewriter regex against the real input-line format the EA still uses (verified by the byte-identical round-trip on the actual edited file), so they meaningfully guard the compatibility contract this change had to preserve."
+  }
+}

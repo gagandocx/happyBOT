@@ -25,7 +25,7 @@ MINI_MQ5 = (
 class TestState(unittest.TestCase):
     def setUp(self):
         self.tmp = tempfile.mkdtemp()
-        self.mq5 = os.path.join(self.tmp, "GaganEA.mq5")
+        self.mq5 = os.path.join(self.tmp, "HappyBot.mq5")
         with open(self.mq5, "w") as fh:
             fh.write(MINI_MQ5)
         self.state_path = os.path.join(self.tmp, "tuner_state.json")

@@ -1,0 +1,14 @@
+{
+  "task_id": "task-round2-ea-improvements",
+  "task_description": "Round 2 of the GaganEA XAUUSD improvement loop. The Round 1 v2.10 baseline lost money (-387.57) with a 41% drawdown, profit factor 0.62, winners smaller than losers, and ~100 trades/day. Make conservative, well-justified edits to GaganEA.mq5 (survival/robustness first, then return) targeting three diagnosed weaknesses: (1) cut drawdown/risk (lower Risk_Percent, cap concurrent exposure, make protection move real SLs), (2) reduce overtrading (fewer/higher-quality entries: wider distance, cooldown, fewer patterns), (3) fix reward:risk (rebalance T1/T2/T3 and tighten the SL, protect open profit earlier). Bump version to 2.11 and append a Round 2 entry to ITERATION_LOG.md. No compiler/MT5 in sandbox: do not fabricate results; correctness is by read-through + the user's next backtest. Do not commit or push.",
+  "status": "in_progress",
+  "feature_order": ["FEAT-001"],
+  "blocked_reason": null,
+  "verification": {
+    "build": "skipped",
+    "tests": "skipped",
+    "test_quality": "skipped",
+    "docker_build": "skipped",
+    "summary": "No MQL5 compiler or MT5 in the Linux sandbox, so compile/backtest cannot run here (authoritative check is the user's next MT5 Strategy Tester run on Windows). Static verification passed: braces balanced 172/172, parens 896/896; grep '2.10' returns nothing (version fully bumped to 2.11 incl. dashboard title); ApplyMasterTrailing, ApplyTrailingToTickets, and new ApplyBreakevenToTickets each have a definition and >=1 call site; Max_Concurrent_Positions=2, Entry_Cooldown_Bars=3, last_entry_bar_time declared+initialized+used in OpenTrade; default-ON patterns are exactly the 6 stronger signals, all others false; no new raw non-ASCII bytes; git status shows only GaganEA.mq5 and ITERATION_LOG.md modified. There is no test suite for the EA to assess test_quality."
+  }
+}

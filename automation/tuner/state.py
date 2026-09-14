@@ -52,7 +52,7 @@ def _empty_state(current_vector):
 
 
 def init_from_mq5(mq5_path):
-    """Build a fresh state seeded from the current GaganEA.mq5 input values.
+    """Build a fresh state seeded from the current HappyBot.mq5 input values.
 
     The seed reflects the LIVE file values as-is (no ordering repair) so state
     faithfully records what is currently compiled in. Ordering/bounds repair is

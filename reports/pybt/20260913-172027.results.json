@@ -1,0 +1,1414 @@
+{
+  "generated_at": "20260913-172027",
+  "run": {
+    "data": "data/XAUUSD_202607011100_202609011203/XAUUSD_202607011100_202609011203.csv",
+    "date_from": null,
+    "date_to": null,
+    "mode": "bar",
+    "max_ticks": null,
+    "config_count": 15
+  },
+  "leaderboard": [
+    {
+      "label": "more_trades_combo",
+      "strategy": "gagan",
+      "params": {
+        "Pullback_Lookback": 10,
+        "RSI_Buy_Max": 75.0,
+        "RSI_Sell_Min": 25.0,
+        "Entry_Cooldown_Bars": 1
+      },
+      "metrics": {
+        "total_net_profit": 258.07396153991243,
+        "gross_profit": 551.1267330076034,
+        "gross_loss": -293.05277146769015,
+        "profit_factor": 1.8806398937891178,
+        "expected_payoff": 2.3676510233019488,
+        "recovery_factor": 5.595810355188016,
+        "sharpe_ratio": 0.2647216012130444,
+        "absolute_drawdown": 24.05756206544993,
+        "maximal_drawdown_money": 46.119140063538,
+        "maximal_drawdown_pct": 3.6632680043200647,
+        "relative_drawdown_money": 40.776336239362536,
+        "relative_drawdown_pct": 3.805811209118325,
+        "total_trades": 109,
+        "total_deals": 109,
+        "win_rate_pct": 50.45871559633027,
+        "largest_profit_trade": 18.615000192857877,
+        "largest_loss_trade": -22.91538345814959,
+        "average_profit_trade": 10.0204860546837,
+        "average_loss_trade": -5.426903175327595,
+        "max_consecutive_wins_count": 6,
+        "max_consecutive_wins_money": 79.57068003106616,
+        "max_consecutive_losses_count": 6,
+        "max_consecutive_losses_money": -35.727829989785896
+      },
+      "score": 1000000258.0758421,
+      "meta": {
+        "mode": "bar",
+        "timeframe_minutes": 5,
+        "tick_count": 10766824,
+        "bar_count": 12110,
+        "data_from": "2026-07-01T11:00:00",
+        "data_to": "2026-09-01T12:00:00",
+        "deposit": 1000.0,
+        "warmup": {
+          "warmed_up": true,
+          "entry_ever_eligible": true,
+          "bars_seen": 12110,
+          "htf_warmup_bars": 2400,
+          "note": ""
+        },
+        "config": {
+          "POINT_SIZE": 0.01,
+          "TICK_SIZE": 0.01,
+          "TICK_VALUE": 1.0,
+          "CONTRACT_SIZE": 100,
+          "COMMISSION_PER_LOT_PER_SIDE": 3.0,
+          "INITIAL_DEPOSIT": 1000.0,
+          "LEVERAGE": 500
+        }
+      },
+      "diagnosis": {
+        "verdict": "LOOKS REASONABLE (no warnings)",
+        "flags": [
+          {
+            "level": "ok",
+            "code": "net_profit_positive",
+            "message": "Net profit is positive (258.07)."
+          },
+          {
+            "level": "ok",
+            "code": "drawdown_ok",
+            "message": "Relative drawdown 3.81% is within the conservative 20% threshold."
+          },
+          {
+            "level": "ok",
+            "code": "profit_factor_good",
+            "message": "Profit factor 1.88 >= 1.50: healthy edge."
+          },
+          {
+            "level": "ok",
+            "code": "trade_count_ok",
+            "message": "109 trades: adequate sample size."
+          },
+          {
+            "level": "ok",
+            "code": "recovery_factor_ok",
+            "message": "Recovery factor 5.60: profit comfortably exceeds drawdown."
+          },
+          {
+            "level": "ok",
+            "code": "consecutive_loss_ok",
+            "message": "Worst losing streak (35.73) is a modest fraction of net profit."
+          }
+        ]
+      }
+    },
+    {
+      "label": "more_trades_pb10",
+      "strategy": "gagan",
+      "params": {
+        "Pullback_Lookback": 10
+      },
+      "metrics": {
+        "total_net_profit": 241.63999331767718,
+        "gross_profit": 457.8675938318801,
+        "gross_loss": -216.22760051420235,
+        "profit_factor": 2.1175261286858995,
+        "expected_payoff": 2.715056104693002,
+        "recovery_factor": 6.774905564673617,
+        "sharpe_ratio": 0.32314119980776845,
+        "absolute_drawdown": 29.890822302224024,
+        "maximal_drawdown_money": 35.666916831676645,
+        "maximal_drawdown_pct": 2.8787555004595946,
+        "relative_drawdown_money": 29.890822302224024,
+        "relative_drawdown_pct": 2.9890822302224023,
+        "total_trades": 89,
+        "total_deals": 89,
+        "win_rate_pct": 52.80898876404494,
+        "largest_profit_trade": 17.96846633099787,
+        "largest_loss_trade": -14.244172901674828,
+        "average_profit_trade": 9.74186369855064,
+        "average_loss_trade": -5.148276202719104,
+        "max_consecutive_wins_count": 5,
+        "max_consecutive_wins_money": 61.75245405897122,
+        "max_consecutive_losses_count": 5,
+        "max_consecutive_losses_money": -29.7408223022243
+      },
+      "score": 1000000241.6421108,
+      "meta": {
+        "mode": "bar",
+        "timeframe_minutes": 5,
+        "tick_count": 10766824,
+        "bar_count": 12110,
+        "data_from": "2026-07-01T11:00:00",
+        "data_to": "2026-09-01T12:00:00",
+        "deposit": 1000.0,
+        "warmup": {
+          "warmed_up": true,
+          "entry_ever_eligible": true,
+          "bars_seen": 12110,
+          "htf_warmup_bars": 2400,
+          "note": ""
+        },
+        "config": {
+          "POINT_SIZE": 0.01,
+          "TICK_SIZE": 0.01,
+          "TICK_VALUE": 1.0,
+          "CONTRACT_SIZE": 100,
+          "COMMISSION_PER_LOT_PER_SIDE": 3.0,
+          "INITIAL_DEPOSIT": 1000.0,
+          "LEVERAGE": 500
+        }
+      },
+      "diagnosis": {
+        "verdict": "NEEDS IMPROVEMENT (warnings present)",
+        "flags": [
+          {
+            "level": "ok",
+            "code": "net_profit_positive",
+            "message": "Net profit is positive (241.64)."
+          },
+          {
+            "level": "ok",
+            "code": "drawdown_ok",
+            "message": "Relative drawdown 2.99% is within the conservative 20% threshold."
+          },
+          {
+            "level": "ok",
+            "code": "profit_factor_good",
+            "message": "Profit factor 2.12 >= 1.50: healthy edge."
+          },
+          {
+            "level": "warn",
+            "code": "low_trade_count",
+            "message": "Only 89 trades (< 100): statistically weak, high overfit risk."
+          },
+          {
+            "level": "ok",
+            "code": "recovery_factor_ok",
+            "message": "Recovery factor 6.77: profit comfortably exceeds drawdown."
+          },
+          {
+            "level": "ok",
+            "code": "consecutive_loss_ok",
+            "message": "Worst losing streak (29.74) is a modest fraction of net profit."
+          }
+        ]
+      }
+    },
+    {
+      "label": "more_trades_session24",
+      "strategy": "gagan",
+      "params": {
+        "Use_Session_Filter": false
+      },
+      "metrics": {
+        "total_net_profit": 221.94198632859877,
+        "gross_profit": 481.81010640498005,
+        "gross_loss": -259.8681200763806,
+        "profit_factor": 1.854056227687206,
+        "expected_payoff": 2.0361650121889796,
+        "recovery_factor": 4.165020463965866,
+        "sharpe_ratio": 0.25519192591265466,
+        "absolute_drawdown": 21.885946141698696,
+        "maximal_drawdown_money": 53.28712985896573,
+        "maximal_drawdown_pct": 4.372557214472418,
+        "relative_drawdown_money": 53.28712985896573,
+        "relative_drawdown_pct": 4.477578175583401,
+        "total_trades": 109,
+        "total_deals": 109,
+        "win_rate_pct": 46.788990825688074,
+        "largest_profit_trade": 18.679442402069725,
+        "largest_loss_trade": -14.244172901674828,
+        "average_profit_trade": 9.447256988332942,
+        "average_loss_trade": -4.480484828903114,
+        "max_consecutive_wins_count": 6,
+        "max_consecutive_wins_money": 66.08292831832325,
+        "max_consecutive_losses_count": 7,
+        "max_consecutive_losses_money": -37.897845550317435
+      },
+      "score": 1000000221.9438404,
+      "meta": {
+        "mode": "bar",
+        "timeframe_minutes": 5,
+        "tick_count": 10766824,
+        "bar_count": 12110,
+        "data_from": "2026-07-01T11:00:00",
+        "data_to": "2026-09-01T12:00:00",
+        "deposit": 1000.0,
+        "warmup": {
+          "warmed_up": true,
+          "entry_ever_eligible": true,
+          "bars_seen": 12110,
+          "htf_warmup_bars": 2400,
+          "note": ""
+        },
+        "config": {
+          "POINT_SIZE": 0.01,
+          "TICK_SIZE": 0.01,
+          "TICK_VALUE": 1.0,
+          "CONTRACT_SIZE": 100,
+          "COMMISSION_PER_LOT_PER_SIDE": 3.0,
+          "INITIAL_DEPOSIT": 1000.0,
+          "LEVERAGE": 500
+        }
+      },
+      "diagnosis": {
+        "verdict": "LOOKS REASONABLE (no warnings)",
+        "flags": [
+          {
+            "level": "ok",
+            "code": "net_profit_positive",
+            "message": "Net profit is positive (221.94)."
+          },
+          {
+            "level": "ok",
+            "code": "drawdown_ok",
+            "message": "Relative drawdown 4.48% is within the conservative 20% threshold."
+          },
+          {
+            "level": "ok",
+            "code": "profit_factor_good",
+            "message": "Profit factor 1.85 >= 1.50: healthy edge."
+          },
+          {
+            "level": "ok",
+            "code": "trade_count_ok",
+            "message": "109 trades: adequate sample size."
+          },
+          {
+            "level": "ok",
+            "code": "recovery_factor_ok",
+            "message": "Recovery factor 4.17: profit comfortably exceeds drawdown."
+          },
+          {
+            "level": "ok",
+            "code": "consecutive_loss_ok",
+            "message": "Worst losing streak (37.90) is a modest fraction of net profit."
+          }
+        ]
+      }
+    },
+    {
+      "label": "rr_wider_tp3.5",
+      "strategy": "gagan",
+      "params": {
+        "ATR_TP_Mult": 3.5
+      },
+      "metrics": {
+        "total_net_profit": 205.03307267350678,
+        "gross_profit": 388.17469048869907,
+        "gross_loss": -183.14161781519198,
+        "profit_factor": 2.1195329336907234,
+        "expected_payoff": 2.9290438953358113,
+        "recovery_factor": 5.815399958322322,
+        "sharpe_ratio": 0.3167330243351817,
+        "absolute_drawdown": 21.885946141698696,
+        "maximal_drawdown_money": 35.25691683167679,
+        "maximal_drawdown_pct": 2.9308394939605655,
+        "relative_drawdown_money": 33.3344050955925,
+        "relative_drawdown_pct": 3.0314611895054293,
+        "total_trades": 70,
+        "total_deals": 70,
+        "win_rate_pct": 50.0,
+        "largest_profit_trade": 22.039999999999708,
+        "largest_loss_trade": -14.244172901674828,
+        "average_profit_trade": 11.09070544253426,
+        "average_loss_trade": -5.232617651862628,
+        "max_consecutive_wins_count": 4,
+        "max_consecutive_wins_money": 50.12000000000024,
+        "max_consecutive_losses_count": 5,
+        "max_consecutive_losses_money": -19.774405095592922
+      },
+      "score": 1000000205.0351923,
+      "meta": {
+        "mode": "bar",
+        "timeframe_minutes": 5,
+        "tick_count": 10766824,
+        "bar_count": 12110,
+        "data_from": "2026-07-01T11:00:00",
+        "data_to": "2026-09-01T12:00:00",
+        "deposit": 1000.0,
+        "warmup": {
+          "warmed_up": true,
+          "entry_ever_eligible": true,
+          "bars_seen": 12110,
+          "htf_warmup_bars": 2400,
+          "note": ""
+        },
+        "config": {
+          "POINT_SIZE": 0.01,
+          "TICK_SIZE": 0.01,
+          "TICK_VALUE": 1.0,
+          "CONTRACT_SIZE": 100,
+          "COMMISSION_PER_LOT_PER_SIDE": 3.0,
+          "INITIAL_DEPOSIT": 1000.0,
+          "LEVERAGE": 500
+        }
+      },
+      "diagnosis": {
+        "verdict": "NEEDS IMPROVEMENT (warnings present)",
+        "flags": [
+          {
+            "level": "ok",
+            "code": "net_profit_positive",
+            "message": "Net profit is positive (205.03)."
+          },
+          {
+            "level": "ok",
+            "code": "drawdown_ok",
+            "message": "Relative drawdown 3.03% is within the conservative 20% threshold."
+          },
+          {
+            "level": "ok",
+            "code": "profit_factor_good",
+            "message": "Profit factor 2.12 >= 1.50: healthy edge."
+          },
+          {
+            "level": "warn",
+            "code": "low_trade_count",
+            "message": "Only 70 trades (< 100): statistically weak, high overfit risk."
+          },
+          {
+            "level": "ok",
+            "code": "recovery_factor_ok",
+            "message": "Recovery factor 5.82: profit comfortably exceeds drawdown."
+          },
+          {
+            "level": "ok",
+            "code": "consecutive_loss_ok",
+            "message": "Worst losing streak (19.77) is a modest fraction of net profit."
+          }
+        ]
+      }
+    },
+    {
+      "label": "more_trades_cool1",
+      "strategy": "gagan",
+      "params": {
+        "Entry_Cooldown_Bars": 1
+      },
+      "metrics": {
+        "total_net_profit": 202.6695746609,
+        "gross_profit": 386.01635386029295,
+        "gross_loss": -183.34677919939267,
+        "profit_factor": 2.105389336785097,
+        "expected_payoff": 2.738778035958108,
+        "recovery_factor": 5.748363523347291,
+        "sharpe_ratio": 0.3204359242473897,
+        "absolute_drawdown": 21.885946141698696,
+        "maximal_drawdown_money": 35.25691683167679,
+        "maximal_drawdown_pct": 2.9369760776195832,
+        "relative_drawdown_money": 33.3344050955925,
+        "relative_drawdown_pct": 3.0061670261920392,
+        "total_trades": 74,
+        "total_deals": 74,
+        "win_rate_pct": 51.35135135135135,
+        "largest_profit_trade": 17.46857090617388,
+        "largest_loss_trade": -14.244172901674828,
+        "average_profit_trade": 10.158325101586657,
+        "average_loss_trade": -5.092966088872019,
+        "max_consecutive_wins_count": 5,
+        "max_consecutive_wins_money": 59.73512336516715,
+        "max_consecutive_losses_count": 5,
+        "max_consecutive_losses_money": -19.774405095592922
+      },
+      "score": 1000000202.67168,
+      "meta": {
+        "mode": "bar",
+        "timeframe_minutes": 5,
+        "tick_count": 10766824,
+        "bar_count": 12110,
+        "data_from": "2026-07-01T11:00:00",
+        "data_to": "2026-09-01T12:00:00",
+        "deposit": 1000.0,
+        "warmup": {
+          "warmed_up": true,
+          "entry_ever_eligible": true,
+          "bars_seen": 12110,
+          "htf_warmup_bars": 2400,
+          "note": ""
+        },
+        "config": {
+          "POINT_SIZE": 0.01,
+          "TICK_SIZE": 0.01,
+          "TICK_VALUE": 1.0,
+          "CONTRACT_SIZE": 100,
+          "COMMISSION_PER_LOT_PER_SIDE": 3.0,
+          "INITIAL_DEPOSIT": 1000.0,
+          "LEVERAGE": 500
+        }
+      },
+      "diagnosis": {
+        "verdict": "NEEDS IMPROVEMENT (warnings present)",
+        "flags": [
+          {
+            "level": "ok",
+            "code": "net_profit_positive",
+            "message": "Net profit is positive (202.67)."
+          },
+          {
+            "level": "ok",
+            "code": "drawdown_ok",
+            "message": "Relative drawdown 3.01% is within the conservative 20% threshold."
+          },
+          {
+            "level": "ok",
+            "code": "profit_factor_good",
+            "message": "Profit factor 2.11 >= 1.50: healthy edge."
+          },
+          {
+            "level": "warn",
+            "code": "low_trade_count",
+            "message": "Only 74 trades (< 100): statistically weak, high overfit risk."
+          },
+          {
+            "level": "ok",
+            "code": "recovery_factor_ok",
+            "message": "Recovery factor 5.75: profit comfortably exceeds drawdown."
+          },
+          {
+            "level": "ok",
+            "code": "consecutive_loss_ok",
+            "message": "Worst losing streak (19.77) is a modest fraction of net profit."
+          }
+        ]
+      }
+    },
+    {
+      "label": "tiers_runner",
+      "strategy": "gagan",
+      "params": {
+        "ATR_T1_Mult": 1.0,
+        "ATR_T2_Mult": 1.8,
+        "ATR_T3_Mult": 2.6,
+        "ATR_TP_Mult": 3.0
+      },
+      "metrics": {
+        "total_net_profit": 196.17794477505808,
+        "gross_profit": 392.03462254452165,
+        "gross_loss": -195.8566777694633,
+        "profit_factor": 2.0016403168339925,
+        "expected_payoff": 2.8025420682151156,
+        "recovery_factor": 5.5642399394039135,
+        "sharpe_ratio": 0.2959830464173402,
+        "absolute_drawdown": 21.885946141698696,
+        "maximal_drawdown_money": 35.25691683167679,
+        "maximal_drawdown_pct": 2.9526478556907287,
+        "relative_drawdown_money": 35.25691683167679,
+        "relative_drawdown_pct": 3.0270287773700355,
+        "total_trades": 70,
+        "total_deals": 70,
+        "win_rate_pct": 48.57142857142857,
+        "largest_profit_trade": 20.968285087408475,
+        "largest_loss_trade": -14.244172901674828,
+        "average_profit_trade": 11.530430074838872,
+        "average_loss_trade": -5.4404632713739804,
+        "max_consecutive_wins_count": 4,
+        "max_consecutive_wins_money": 58.649227797653005,
+        "max_consecutive_losses_count": 5,
+        "max_consecutive_losses_money": -19.774405095592922
+      },
+      "score": 1000000196.1799464,
+      "meta": {
+        "mode": "bar",
+        "timeframe_minutes": 5,
+        "tick_count": 10766824,
+        "bar_count": 12110,
+        "data_from": "2026-07-01T11:00:00",
+        "data_to": "2026-09-01T12:00:00",
+        "deposit": 1000.0,
+        "warmup": {
+          "warmed_up": true,
+          "entry_ever_eligible": true,
+          "bars_seen": 12110,
+          "htf_warmup_bars": 2400,
+          "note": ""
+        },
+        "config": {
+          "POINT_SIZE": 0.01,
+          "TICK_SIZE": 0.01,
+          "TICK_VALUE": 1.0,
+          "CONTRACT_SIZE": 100,
+          "COMMISSION_PER_LOT_PER_SIDE": 3.0,
+          "INITIAL_DEPOSIT": 1000.0,
+          "LEVERAGE": 500
+        }
+      },
+      "diagnosis": {
+        "verdict": "NEEDS IMPROVEMENT (warnings present)",
+        "flags": [
+          {
+            "level": "ok",
+            "code": "net_profit_positive",
+            "message": "Net profit is positive (196.18)."
+          },
+          {
+            "level": "ok",
+            "code": "drawdown_ok",
+            "message": "Relative drawdown 3.03% is within the conservative 20% threshold."
+          },
+          {
+            "level": "ok",
+            "code": "profit_factor_good",
+            "message": "Profit factor 2.00 >= 1.50: healthy edge."
+          },
+          {
+            "level": "warn",
+            "code": "low_trade_count",
+            "message": "Only 70 trades (< 100): statistically weak, high overfit risk."
+          },
+          {
+            "level": "ok",
+            "code": "recovery_factor_ok",
+            "message": "Recovery factor 5.56: profit comfortably exceeds drawdown."
+          },
+          {
+            "level": "ok",
+            "code": "consecutive_loss_ok",
+            "message": "Worst losing streak (19.77) is a modest fraction of net profit."
+          }
+        ]
+      }
+    },
+    {
+      "label": "rr_wider_tp3.0",
+      "strategy": "gagan",
+      "params": {
+        "ATR_TP_Mult": 3.0
+      },
+      "metrics": {
+        "total_net_profit": 194.4531615940435,
+        "gross_profit": 377.5947794092358,
+        "gross_loss": -183.14161781519198,
+        "profit_factor": 2.0617639175289275,
+        "expected_payoff": 2.7779023084863357,
+        "recovery_factor": 5.515319519355586,
+        "sharpe_ratio": 0.30719644481915054,
+        "absolute_drawdown": 21.885946141698696,
+        "maximal_drawdown_money": 35.25691683167679,
+        "maximal_drawdown_pct": 2.9569189705961025,
+        "relative_drawdown_money": 33.3344050955925,
+        "relative_drawdown_pct": 3.04393005960295,
+        "total_trades": 70,
+        "total_deals": 70,
+        "win_rate_pct": 50.0,
+        "largest_profit_trade": 20.968285087408475,
+        "largest_loss_trade": -14.244172901674828,
+        "average_profit_trade": 10.788422268835308,
+        "average_loss_trade": -5.232617651862628,
+        "max_consecutive_wins_count": 4,
+        "max_consecutive_wins_money": 50.12000000000024,
+        "max_consecutive_losses_count": 5,
+        "max_consecutive_losses_money": -19.774405095592922
+      },
+      "score": 1000000194.4552233,
+      "meta": {
+        "mode": "bar",
+        "timeframe_minutes": 5,
+        "tick_count": 10766824,
+        "bar_count": 12110,
+        "data_from": "2026-07-01T11:00:00",
+        "data_to": "2026-09-01T12:00:00",
+        "deposit": 1000.0,
+        "warmup": {
+          "warmed_up": true,
+          "entry_ever_eligible": true,
+          "bars_seen": 12110,
+          "htf_warmup_bars": 2400,
+          "note": ""
+        },
+        "config": {
+          "POINT_SIZE": 0.01,
+          "TICK_SIZE": 0.01,
+          "TICK_VALUE": 1.0,
+          "CONTRACT_SIZE": 100,
+          "COMMISSION_PER_LOT_PER_SIDE": 3.0,
+          "INITIAL_DEPOSIT": 1000.0,
+          "LEVERAGE": 500
+        }
+      },
+      "diagnosis": {
+        "verdict": "NEEDS IMPROVEMENT (warnings present)",
+        "flags": [
+          {
+            "level": "ok",
+            "code": "net_profit_positive",
+            "message": "Net profit is positive (194.45)."
+          },
+          {
+            "level": "ok",
+            "code": "drawdown_ok",
+            "message": "Relative drawdown 3.04% is within the conservative 20% threshold."
+          },
+          {
+            "level": "ok",
+            "code": "profit_factor_good",
+            "message": "Profit factor 2.06 >= 1.50: healthy edge."
+          },
+          {
+            "level": "warn",
+            "code": "low_trade_count",
+            "message": "Only 70 trades (< 100): statistically weak, high overfit risk."
+          },
+          {
+            "level": "ok",
+            "code": "recovery_factor_ok",
+            "message": "Recovery factor 5.52: profit comfortably exceeds drawdown."
+          },
+          {
+            "level": "ok",
+            "code": "consecutive_loss_ok",
+            "message": "Worst losing streak (19.77) is a modest fraction of net profit."
+          }
+        ]
+      }
+    },
+    {
+      "label": "rr_sl1.2_tp3.0",
+      "strategy": "gagan",
+      "params": {
+        "ATR_SL_Mult": 1.2,
+        "ATR_TP_Mult": 3.0
+      },
+      "metrics": {
+        "total_net_profit": 170.42749579825704,
+        "gross_profit": 345.6637248879572,
+        "gross_loss": -175.23622908969992,
+        "profit_factor": 1.9725585667049412,
+        "expected_payoff": 2.33462323011311,
+        "recovery_factor": 5.798715336114086,
+        "sharpe_ratio": 0.27880093784923754,
+        "absolute_drawdown": 17.556756913359095,
+        "maximal_drawdown_money": 29.390560825920147,
+        "maximal_drawdown_pct": 2.4957255792306796,
+        "relative_drawdown_money": 28.781847550340217,
+        "relative_drawdown_pct": 2.748366065392471,
+        "total_trades": 73,
+        "total_deals": 73,
+        "win_rate_pct": 43.83561643835616,
+        "largest_profit_trade": 20.968285087408475,
+        "largest_loss_trade": -11.401338321339862,
+        "average_profit_trade": 10.801991402748662,
+        "average_loss_trade": -4.274054368041462,
+        "max_consecutive_wins_count": 4,
+        "max_consecutive_wins_money": 50.72999999999991,
+        "max_consecutive_losses_count": 6,
+        "max_consecutive_losses_money": -20.422027121540108
+      },
+      "score": 1000000170.4294684,
+      "meta": {
+        "mode": "bar",
+        "timeframe_minutes": 5,
+        "tick_count": 10766824,
+        "bar_count": 12110,
+        "data_from": "2026-07-01T11:00:00",
+        "data_to": "2026-09-01T12:00:00",
+        "deposit": 1000.0,
+        "warmup": {
+          "warmed_up": true,
+          "entry_ever_eligible": true,
+          "bars_seen": 12110,
+          "htf_warmup_bars": 2400,
+          "note": ""
+        },
+        "config": {
+          "POINT_SIZE": 0.01,
+          "TICK_SIZE": 0.01,
+          "TICK_VALUE": 1.0,
+          "CONTRACT_SIZE": 100,
+          "COMMISSION_PER_LOT_PER_SIDE": 3.0,
+          "INITIAL_DEPOSIT": 1000.0,
+          "LEVERAGE": 500
+        }
+      },
+      "diagnosis": {
+        "verdict": "NEEDS IMPROVEMENT (warnings present)",
+        "flags": [
+          {
+            "level": "ok",
+            "code": "net_profit_positive",
+            "message": "Net profit is positive (170.43)."
+          },
+          {
+            "level": "ok",
+            "code": "drawdown_ok",
+            "message": "Relative drawdown 2.75% is within the conservative 20% threshold."
+          },
+          {
+            "level": "ok",
+            "code": "profit_factor_good",
+            "message": "Profit factor 1.97 >= 1.50: healthy edge."
+          },
+          {
+            "level": "warn",
+            "code": "low_trade_count",
+            "message": "Only 73 trades (< 100): statistically weak, high overfit risk."
+          },
+          {
+            "level": "ok",
+            "code": "recovery_factor_ok",
+            "message": "Recovery factor 5.80: profit comfortably exceeds drawdown."
+          },
+          {
+            "level": "ok",
+            "code": "consecutive_loss_ok",
+            "message": "Worst losing streak (20.42) is a modest fraction of net profit."
+          }
+        ]
+      }
+    },
+    {
+      "label": "v2.12_baseline",
+      "strategy": "gagan",
+      "params": {},
+      "metrics": {
+        "total_net_profit": 163.80889576114836,
+        "gross_profit": 346.95051357634054,
+        "gross_loss": -183.14161781519198,
+        "profit_factor": 1.8944384008142157,
+        "expected_payoff": 2.3401270823021196,
+        "recovery_factor": 4.646149195155184,
+        "sharpe_ratio": 0.27547691169371935,
+        "absolute_drawdown": 21.885946141698696,
+        "maximal_drawdown_money": 35.25691683167679,
+        "maximal_drawdown_pct": 3.0349183827654556,
+        "relative_drawdown_money": 35.25691683167679,
+        "relative_drawdown_pct": 3.1021813344914957,
+        "total_trades": 70,
+        "total_deals": 70,
+        "win_rate_pct": 50.0,
+        "largest_profit_trade": 17.46857090617388,
+        "largest_loss_trade": -14.244172901674828,
+        "average_profit_trade": 9.912871816466872,
+        "average_loss_trade": -5.232617651862628,
+        "max_consecutive_wins_count": 4,
+        "max_consecutive_wins_money": 47.93302086810343,
+        "max_consecutive_losses_count": 5,
+        "max_consecutive_losses_money": -19.774405095592922
+      },
+      "score": 1000000163.8107902,
+      "meta": {
+        "mode": "bar",
+        "timeframe_minutes": 5,
+        "tick_count": 10766824,
+        "bar_count": 12110,
+        "data_from": "2026-07-01T11:00:00",
+        "data_to": "2026-09-01T12:00:00",
+        "deposit": 1000.0,
+        "warmup": {
+          "warmed_up": true,
+          "entry_ever_eligible": true,
+          "bars_seen": 12110,
+          "htf_warmup_bars": 2400,
+          "note": ""
+        },
+        "config": {
+          "POINT_SIZE": 0.01,
+          "TICK_SIZE": 0.01,
+          "TICK_VALUE": 1.0,
+          "CONTRACT_SIZE": 100,
+          "COMMISSION_PER_LOT_PER_SIDE": 3.0,
+          "INITIAL_DEPOSIT": 1000.0,
+          "LEVERAGE": 500
+        }
+      },
+      "diagnosis": {
+        "verdict": "NEEDS IMPROVEMENT (warnings present)",
+        "flags": [
+          {
+            "level": "ok",
+            "code": "net_profit_positive",
+            "message": "Net profit is positive (163.81)."
+          },
+          {
+            "level": "ok",
+            "code": "drawdown_ok",
+            "message": "Relative drawdown 3.10% is within the conservative 20% threshold."
+          },
+          {
+            "level": "ok",
+            "code": "profit_factor_good",
+            "message": "Profit factor 1.89 >= 1.50: healthy edge."
+          },
+          {
+            "level": "warn",
+            "code": "low_trade_count",
+            "message": "Only 70 trades (< 100): statistically weak, high overfit risk."
+          },
+          {
+            "level": "ok",
+            "code": "recovery_factor_ok",
+            "message": "Recovery factor 4.65: profit comfortably exceeds drawdown."
+          },
+          {
+            "level": "ok",
+            "code": "consecutive_loss_ok",
+            "message": "Worst losing streak (19.77) is a modest fraction of net profit."
+          }
+        ]
+      }
+    },
+    {
+      "label": "risk1.5",
+      "strategy": "gagan",
+      "params": {
+        "Risk_Percent": 1.5
+      },
+      "metrics": {
+        "total_net_profit": 163.80889576114836,
+        "gross_profit": 346.95051357634054,
+        "gross_loss": -183.14161781519198,
+        "profit_factor": 1.8944384008142157,
+        "expected_payoff": 2.3401270823021196,
+        "recovery_factor": 4.646149195155184,
+        "sharpe_ratio": 0.27547691169371935,
+        "absolute_drawdown": 21.885946141698696,
+        "maximal_drawdown_money": 35.25691683167679,
+        "maximal_drawdown_pct": 3.0349183827654556,
+        "relative_drawdown_money": 35.25691683167679,
+        "relative_drawdown_pct": 3.1021813344914957,
+        "total_trades": 70,
+        "total_deals": 70,
+        "win_rate_pct": 50.0,
+        "largest_profit_trade": 17.46857090617388,
+        "largest_loss_trade": -14.244172901674828,
+        "average_profit_trade": 9.912871816466872,
+        "average_loss_trade": -5.232617651862628,
+        "max_consecutive_wins_count": 4,
+        "max_consecutive_wins_money": 47.93302086810343,
+        "max_consecutive_losses_count": 5,
+        "max_consecutive_losses_money": -19.774405095592922
+      },
+      "score": 1000000163.8107902,
+      "meta": {
+        "mode": "bar",
+        "timeframe_minutes": 5,
+        "tick_count": 10766824,
+        "bar_count": 12110,
+        "data_from": "2026-07-01T11:00:00",
+        "data_to": "2026-09-01T12:00:00",
+        "deposit": 1000.0,
+        "warmup": {
+          "warmed_up": true,
+          "entry_ever_eligible": true,
+          "bars_seen": 12110,
+          "htf_warmup_bars": 2400,
+          "note": ""
+        },
+        "config": {
+          "POINT_SIZE": 0.01,
+          "TICK_SIZE": 0.01,
+          "TICK_VALUE": 1.0,
+          "CONTRACT_SIZE": 100,
+          "COMMISSION_PER_LOT_PER_SIDE": 3.0,
+          "INITIAL_DEPOSIT": 1000.0,
+          "LEVERAGE": 500
+        }
+      },
+      "diagnosis": {
+        "verdict": "NEEDS IMPROVEMENT (warnings present)",
+        "flags": [
+          {
+            "level": "ok",
+            "code": "net_profit_positive",
+            "message": "Net profit is positive (163.81)."
+          },
+          {
+            "level": "ok",
+            "code": "drawdown_ok",
+            "message": "Relative drawdown 3.10% is within the conservative 20% threshold."
+          },
+          {
+            "level": "ok",
+            "code": "profit_factor_good",
+            "message": "Profit factor 1.89 >= 1.50: healthy edge."
+          },
+          {
+            "level": "warn",
+            "code": "low_trade_count",
+            "message": "Only 70 trades (< 100): statistically weak, high overfit risk."
+          },
+          {
+            "level": "ok",
+            "code": "recovery_factor_ok",
+            "message": "Recovery factor 4.65: profit comfortably exceeds drawdown."
+          },
+          {
+            "level": "ok",
+            "code": "consecutive_loss_ok",
+            "message": "Worst losing streak (19.77) is a modest fraction of net profit."
+          }
+        ]
+      }
+    },
+    {
+      "label": "risk2.0",
+      "strategy": "gagan",
+      "params": {
+        "Risk_Percent": 2.0
+      },
+      "metrics": {
+        "total_net_profit": 163.80889576114836,
+        "gross_profit": 346.95051357634054,
+        "gross_loss": -183.14161781519198,
+        "profit_factor": 1.8944384008142157,
+        "expected_payoff": 2.3401270823021196,
+        "recovery_factor": 4.646149195155184,
+        "sharpe_ratio": 0.27547691169371935,
+        "absolute_drawdown": 21.885946141698696,
+        "maximal_drawdown_money": 35.25691683167679,
+        "maximal_drawdown_pct": 3.0349183827654556,
+        "relative_drawdown_money": 35.25691683167679,
+        "relative_drawdown_pct": 3.1021813344914957,
+        "total_trades": 70,
+        "total_deals": 70,
+        "win_rate_pct": 50.0,
+        "largest_profit_trade": 17.46857090617388,
+        "largest_loss_trade": -14.244172901674828,
+        "average_profit_trade": 9.912871816466872,
+        "average_loss_trade": -5.232617651862628,
+        "max_consecutive_wins_count": 4,
+        "max_consecutive_wins_money": 47.93302086810343,
+        "max_consecutive_losses_count": 5,
+        "max_consecutive_losses_money": -19.774405095592922
+      },
+      "score": 1000000163.8107902,
+      "meta": {
+        "mode": "bar",
+        "timeframe_minutes": 5,
+        "tick_count": 10766824,
+        "bar_count": 12110,
+        "data_from": "2026-07-01T11:00:00",
+        "data_to": "2026-09-01T12:00:00",
+        "deposit": 1000.0,
+        "warmup": {
+          "warmed_up": true,
+          "entry_ever_eligible": true,
+          "bars_seen": 12110,
+          "htf_warmup_bars": 2400,
+          "note": ""
+        },
+        "config": {
+          "POINT_SIZE": 0.01,
+          "TICK_SIZE": 0.01,
+          "TICK_VALUE": 1.0,
+          "CONTRACT_SIZE": 100,
+          "COMMISSION_PER_LOT_PER_SIDE": 3.0,
+          "INITIAL_DEPOSIT": 1000.0,
+          "LEVERAGE": 500
+        }
+      },
+      "diagnosis": {
+        "verdict": "NEEDS IMPROVEMENT (warnings present)",
+        "flags": [
+          {
+            "level": "ok",
+            "code": "net_profit_positive",
+            "message": "Net profit is positive (163.81)."
+          },
+          {
+            "level": "ok",
+            "code": "drawdown_ok",
+            "message": "Relative drawdown 3.10% is within the conservative 20% threshold."
+          },
+          {
+            "level": "ok",
+            "code": "profit_factor_good",
+            "message": "Profit factor 1.89 >= 1.50: healthy edge."
+          },
+          {
+            "level": "warn",
+            "code": "low_trade_count",
+            "message": "Only 70 trades (< 100): statistically weak, high overfit risk."
+          },
+          {
+            "level": "ok",
+            "code": "recovery_factor_ok",
+            "message": "Recovery factor 4.65: profit comfortably exceeds drawdown."
+          },
+          {
+            "level": "ok",
+            "code": "consecutive_loss_ok",
+            "message": "Worst losing streak (19.77) is a modest fraction of net profit."
+          }
+        ]
+      }
+    },
+    {
+      "label": "regime_wider",
+      "strategy": "gagan",
+      "params": {
+        "ATR_Min_Points": 80.0
+      },
+      "metrics": {
+        "total_net_profit": 163.80889576114836,
+        "gross_profit": 346.95051357634054,
+        "gross_loss": -183.14161781519198,
+        "profit_factor": 1.8944384008142157,
+        "expected_payoff": 2.3401270823021196,
+        "recovery_factor": 4.646149195155184,
+        "sharpe_ratio": 0.27547691169371935,
+        "absolute_drawdown": 21.885946141698696,
+        "maximal_drawdown_money": 35.25691683167679,
+        "maximal_drawdown_pct": 3.0349183827654556,
+        "relative_drawdown_money": 35.25691683167679,
+        "relative_drawdown_pct": 3.1021813344914957,
+        "total_trades": 70,
+        "total_deals": 70,
+        "win_rate_pct": 50.0,
+        "largest_profit_trade": 17.46857090617388,
+        "largest_loss_trade": -14.244172901674828,
+        "average_profit_trade": 9.912871816466872,
+        "average_loss_trade": -5.232617651862628,
+        "max_consecutive_wins_count": 4,
+        "max_consecutive_wins_money": 47.93302086810343,
+        "max_consecutive_losses_count": 5,
+        "max_consecutive_losses_money": -19.774405095592922
+      },
+      "score": 1000000163.8107902,
+      "meta": {
+        "mode": "bar",
+        "timeframe_minutes": 5,
+        "tick_count": 10766824,
+        "bar_count": 12110,
+        "data_from": "2026-07-01T11:00:00",
+        "data_to": "2026-09-01T12:00:00",
+        "deposit": 1000.0,
+        "warmup": {
+          "warmed_up": true,
+          "entry_ever_eligible": true,
+          "bars_seen": 12110,
+          "htf_warmup_bars": 2400,
+          "note": ""
+        },
+        "config": {
+          "POINT_SIZE": 0.01,
+          "TICK_SIZE": 0.01,
+          "TICK_VALUE": 1.0,
+          "CONTRACT_SIZE": 100,
+          "COMMISSION_PER_LOT_PER_SIDE": 3.0,
+          "INITIAL_DEPOSIT": 1000.0,
+          "LEVERAGE": 500
+        }
+      },
+      "diagnosis": {
+        "verdict": "NEEDS IMPROVEMENT (warnings present)",
+        "flags": [
+          {
+            "level": "ok",
+            "code": "net_profit_positive",
+            "message": "Net profit is positive (163.81)."
+          },
+          {
+            "level": "ok",
+            "code": "drawdown_ok",
+            "message": "Relative drawdown 3.10% is within the conservative 20% threshold."
+          },
+          {
+            "level": "ok",
+            "code": "profit_factor_good",
+            "message": "Profit factor 1.89 >= 1.50: healthy edge."
+          },
+          {
+            "level": "warn",
+            "code": "low_trade_count",
+            "message": "Only 70 trades (< 100): statistically weak, high overfit risk."
+          },
+          {
+            "level": "ok",
+            "code": "recovery_factor_ok",
+            "message": "Recovery factor 4.65: profit comfortably exceeds drawdown."
+          },
+          {
+            "level": "ok",
+            "code": "consecutive_loss_ok",
+            "message": "Worst losing streak (19.77) is a modest fraction of net profit."
+          }
+        ]
+      }
+    },
+    {
+      "label": "concurrent3",
+      "strategy": "gagan",
+      "params": {
+        "Max_Concurrent_Positions": 3
+      },
+      "metrics": {
+        "total_net_profit": 163.80889576114836,
+        "gross_profit": 346.95051357634054,
+        "gross_loss": -183.14161781519198,
+        "profit_factor": 1.8944384008142157,
+        "expected_payoff": 2.3401270823021196,
+        "recovery_factor": 4.646149195155184,
+        "sharpe_ratio": 0.27547691169371935,
+        "absolute_drawdown": 21.885946141698696,
+        "maximal_drawdown_money": 35.25691683167679,
+        "maximal_drawdown_pct": 3.0349183827654556,
+        "relative_drawdown_money": 35.25691683167679,
+        "relative_drawdown_pct": 3.1021813344914957,
+        "total_trades": 70,
+        "total_deals": 70,
+        "win_rate_pct": 50.0,
+        "largest_profit_trade": 17.46857090617388,
+        "largest_loss_trade": -14.244172901674828,
+        "average_profit_trade": 9.912871816466872,
+        "average_loss_trade": -5.232617651862628,
+        "max_consecutive_wins_count": 4,
+        "max_consecutive_wins_money": 47.93302086810343,
+        "max_consecutive_losses_count": 5,
+        "max_consecutive_losses_money": -19.774405095592922
+      },
+      "score": 1000000163.8107902,
+      "meta": {
+        "mode": "bar",
+        "timeframe_minutes": 5,
+        "tick_count": 10766824,
+        "bar_count": 12110,
+        "data_from": "2026-07-01T11:00:00",
+        "data_to": "2026-09-01T12:00:00",
+        "deposit": 1000.0,
+        "warmup": {
+          "warmed_up": true,
+          "entry_ever_eligible": true,
+          "bars_seen": 12110,
+          "htf_warmup_bars": 2400,
+          "note": ""
+        },
+        "config": {
+          "POINT_SIZE": 0.01,
+          "TICK_SIZE": 0.01,
+          "TICK_VALUE": 1.0,
+          "CONTRACT_SIZE": 100,
+          "COMMISSION_PER_LOT_PER_SIDE": 3.0,
+          "INITIAL_DEPOSIT": 1000.0,
+          "LEVERAGE": 500
+        }
+      },
+      "diagnosis": {
+        "verdict": "NEEDS IMPROVEMENT (warnings present)",
+        "flags": [
+          {
+            "level": "ok",
+            "code": "net_profit_positive",
+            "message": "Net profit is positive (163.81)."
+          },
+          {
+            "level": "ok",
+            "code": "drawdown_ok",
+            "message": "Relative drawdown 3.10% is within the conservative 20% threshold."
+          },
+          {
+            "level": "ok",
+            "code": "profit_factor_good",
+            "message": "Profit factor 1.89 >= 1.50: healthy edge."
+          },
+          {
+            "level": "warn",
+            "code": "low_trade_count",
+            "message": "Only 70 trades (< 100): statistically weak, high overfit risk."
+          },
+          {
+            "level": "ok",
+            "code": "recovery_factor_ok",
+            "message": "Recovery factor 4.65: profit comfortably exceeds drawdown."
+          },
+          {
+            "level": "ok",
+            "code": "consecutive_loss_ok",
+            "message": "Worst losing streak (19.77) is a modest fraction of net profit."
+          }
+        ]
+      }
+    },
+    {
+      "label": "rr_tighter_sl1.2",
+      "strategy": "gagan",
+      "params": {
+        "ATR_SL_Mult": 1.2
+      },
+      "metrics": {
+        "total_net_profit": 142.39451347129216,
+        "gross_profit": 317.6307425609922,
+        "gross_loss": -175.23622908969992,
+        "profit_factor": 1.812586040061404,
+        "expected_payoff": 1.9506097735793446,
+        "recovery_factor": 4.844906305622841,
+        "sharpe_ratio": 0.2491910135461815,
+        "absolute_drawdown": 17.556756913359095,
+        "maximal_drawdown_money": 29.390560825920147,
+        "maximal_drawdown_pct": 2.5565836624074585,
+        "relative_drawdown_money": 28.751847550340244,
+        "relative_drawdown_pct": 2.770694688407793,
+        "total_trades": 73,
+        "total_deals": 73,
+        "win_rate_pct": 43.83561643835616,
+        "largest_profit_trade": 17.46857090617388,
+        "largest_loss_trade": -11.401338321339862,
+        "average_profit_trade": 9.925960705031006,
+        "average_loss_trade": -4.274054368041462,
+        "max_consecutive_wins_count": 4,
+        "max_consecutive_wins_money": 48.94246195381982,
+        "max_consecutive_losses_count": 6,
+        "max_consecutive_losses_money": -20.422027121540108
+      },
+      "score": 1000000142.3963261,
+      "meta": {
+        "mode": "bar",
+        "timeframe_minutes": 5,
+        "tick_count": 10766824,
+        "bar_count": 12110,
+        "data_from": "2026-07-01T11:00:00",
+        "data_to": "2026-09-01T12:00:00",
+        "deposit": 1000.0,
+        "warmup": {
+          "warmed_up": true,
+          "entry_ever_eligible": true,
+          "bars_seen": 12110,
+          "htf_warmup_bars": 2400,
+          "note": ""
+        },
+        "config": {
+          "POINT_SIZE": 0.01,
+          "TICK_SIZE": 0.01,
+          "TICK_VALUE": 1.0,
+          "CONTRACT_SIZE": 100,
+          "COMMISSION_PER_LOT_PER_SIDE": 3.0,
+          "INITIAL_DEPOSIT": 1000.0,
+          "LEVERAGE": 500
+        }
+      },
+      "diagnosis": {
+        "verdict": "NEEDS IMPROVEMENT (warnings present)",
+        "flags": [
+          {
+            "level": "ok",
+            "code": "net_profit_positive",
+            "message": "Net profit is positive (142.39)."
+          },
+          {
+            "level": "ok",
+            "code": "drawdown_ok",
+            "message": "Relative drawdown 2.77% is within the conservative 20% threshold."
+          },
+          {
+            "level": "ok",
+            "code": "profit_factor_good",
+            "message": "Profit factor 1.81 >= 1.50: healthy edge."
+          },
+          {
+            "level": "warn",
+            "code": "low_trade_count",
+            "message": "Only 73 trades (< 100): statistically weak, high overfit risk."
+          },
+          {
+            "level": "ok",
+            "code": "recovery_factor_ok",
+            "message": "Recovery factor 4.84: profit comfortably exceeds drawdown."
+          },
+          {
+            "level": "ok",
+            "code": "consecutive_loss_ok",
+            "message": "Worst losing streak (20.42) is a modest fraction of net profit."
+          }
+        ]
+      }
+    },
+    {
+      "label": "more_trades_rsi75",
+      "strategy": "gagan",
+      "params": {
+        "RSI_Buy_Max": 75.0,
+        "RSI_Sell_Min": 25.0
+      },
+      "metrics": {
+        "total_net_profit": 103.23441180126586,
+        "gross_profit": 348.8210552244144,
+        "gross_loss": -245.58664342314833,
+        "profit_factor": 1.4203584134801341,
+        "expected_payoff": 1.274498911126739,
+        "recovery_factor": 2.6161478547701136,
+        "sharpe_ratio": 0.14614886136799654,
+        "absolute_drawdown": 24.05756206544993,
+        "maximal_drawdown_money": 39.460465360562466,
+        "maximal_drawdown_pct": 3.58191418092522,
+        "relative_drawdown_money": 39.460465360562466,
+        "relative_drawdown_pct": 3.58191418092522,
+        "total_trades": 81,
+        "total_deals": 81,
+        "win_rate_pct": 43.20987654320987,
+        "largest_profit_trade": 17.46857090617388,
+        "largest_loss_trade": -22.91538345814959,
+        "average_profit_trade": 9.966315863554698,
+        "average_loss_trade": -5.338840074416268,
+        "max_consecutive_wins_count": 4,
+        "max_consecutive_wins_money": 47.93302086810343,
+        "max_consecutive_losses_count": 6,
+        "max_consecutive_losses_money": -19.80440509559292
+      },
+      "score": 1000000103.2358322,
+      "meta": {
+        "mode": "bar",
+        "timeframe_minutes": 5,
+        "tick_count": 10766824,
+        "bar_count": 12110,
+        "data_from": "2026-07-01T11:00:00",
+        "data_to": "2026-09-01T12:00:00",
+        "deposit": 1000.0,
+        "warmup": {
+          "warmed_up": true,
+          "entry_ever_eligible": true,
+          "bars_seen": 12110,
+          "htf_warmup_bars": 2400,
+          "note": ""
+        },
+        "config": {
+          "POINT_SIZE": 0.01,
+          "TICK_SIZE": 0.01,
+          "TICK_VALUE": 1.0,
+          "CONTRACT_SIZE": 100,
+          "COMMISSION_PER_LOT_PER_SIDE": 3.0,
+          "INITIAL_DEPOSIT": 1000.0,
+          "LEVERAGE": 500
+        }
+      },
+      "diagnosis": {
+        "verdict": "NEEDS IMPROVEMENT (warnings present)",
+        "flags": [
+          {
+            "level": "ok",
+            "code": "net_profit_positive",
+            "message": "Net profit is positive (103.23)."
+          },
+          {
+            "level": "ok",
+            "code": "drawdown_ok",
+            "message": "Relative drawdown 3.58% is within the conservative 20% threshold."
+          },
+          {
+            "level": "info",
+            "code": "profit_factor_ok",
+            "message": "Profit factor 1.42 is acceptable but not strong."
+          },
+          {
+            "level": "warn",
+            "code": "low_trade_count",
+            "message": "Only 81 trades (< 100): statistically weak, high overfit risk."
+          },
+          {
+            "level": "ok",
+            "code": "recovery_factor_ok",
+            "message": "Recovery factor 2.62: profit comfortably exceeds drawdown."
+          },
+          {
+            "level": "ok",
+            "code": "consecutive_loss_ok",
+            "message": "Worst losing streak (19.80) is a modest fraction of net profit."
+          }
+        ]
+      }
+    }
+  ]
+}

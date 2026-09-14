@@ -1,8 +1,8 @@
-# GaganEA v2.10
+# HappyBot v2.10
 
 An MQL5 Expert Advisor for MetaTrader 5.
 
-GaganEA is a multi-pattern, trend-following EA that trades in the direction of a
+HappyBot is a multi-pattern, trend-following EA that trades in the direction of a
 higher-timeframe trend, confirmed by candlestick and chart patterns on the
 execution timeframe.
 
@@ -27,8 +27,8 @@ execution timeframe.
 
 ## Usage
 
-1. Copy `GaganEA.mq5` into the MetaTrader 5 `MQL5/Experts` folder.
-2. Compile it in MetaEditor to produce `GaganEA.ex5`.
+1. Copy `HappyBot.mq5` into the MetaTrader 5 `MQL5/Experts` folder.
+2. Compile it in MetaEditor to produce `HappyBot.ex5`.
 3. Attach the EA to a chart and configure the input parameters as needed.
 
 > Trading involves substantial risk. Test thoroughly in the Strategy Tester and

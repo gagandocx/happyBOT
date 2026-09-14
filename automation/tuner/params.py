@@ -1,6 +1,6 @@
-"""Tunable parameter space for GaganEA.mq5 and validity/ordering repair.
+"""Tunable parameter space for HappyBot.mq5 and validity/ordering repair.
 
-Each entry maps an EXACT GaganEA.mq5 input name to its bounds, step, and numeric
+Each entry maps an EXACT HappyBot.mq5 input name to its bounds, step, and numeric
 type. The `validate` function takes any proposed vector and returns a VALID one:
 clamped to bounds, snapped to step, ordering-repaired (T1 < T2 < T3 <= StopLoss),
 with int params kept int and double params kept float. This guarantees the tuner

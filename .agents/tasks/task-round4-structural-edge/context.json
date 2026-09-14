@@ -1,0 +1,36 @@
+{
+  "project_type": "MQL5 MetaTrader 5 Expert Advisor (single-file trading strategy) with a Python auto-tuner + report-analysis toolchain",
+  "language": "MQL5 (EA) + Python 3.9 stdlib (tuner/tools)",
+  "build_system": "MetaEditor / MQL5 compiler on the user's Windows PC (MT5 build 6191). NO compiler or MT5 in this Linux sandbox.",
+  "test_framework": "Python stdlib unittest for the tuner (automation/tuner/tests, 38 tests) and tools/test_analyze_report.py (16 tests). The EA itself has NO automated tests; correctness is by careful MQL5 read-through only.",
+  "build_command": "Cannot build in sandbox. On user's Windows PC: compile GaganEA.mq5 in MetaEditor to produce GaganEA.ex5. In sandbox the only compile-adjacent check is a manual MQL5 read-through (balanced braces, handles created/released, guarded CopyBuffer, no obvious type errors).",
+  "test_command": "cd automation/tuner && python3 -m unittest discover -s tests -q   (and tools: python3 -m unittest in tools/). These verify the tuner regex still matches the 11 managed inputs after the EA edit.",
+  "verification_instructions": "1) grep the 11 tuner-managed input names/types are unchanged (single-line `input TYPE Name = value;`). 2) Run the tuner unittest suite; it must still pass (rewriter reads the 11 inputs). 3) Manual MQL5 read-through: braces balanced, every new indicator handle created in OnInit and released in OnDeinit, every CopyBuffer/CopyClose/CopyHigh/CopyLow guarded with a `< n return`, SL/TP normalized, no non-ASCII bytes added beyond the 2 pre-existing (lines ~1426/1429). 4) Confirm version bumped to 2.12 in #property version, header comments, OnInit/OnDeinit prints, dashboard title, EA_Comment default. COMPILE + BACKTEST are NOT verifiable in-sandbox and MUST be validated by the user's next MT5 run on Windows.",
+  "snapshot_or_generated_files": "None for the EA. The tuner writes automation/tuner/tuner_state.json + current_params.json and reports/tuner/iterNNNN.* on the user's PC; not produced in sandbox.",
+  "setup_instructions": "No install needed for read-through work. For tuner tests: cd automation/tuner && python3 -m unittest discover -s tests -q (Python 3.9 present, no pytest).",
+  "environment_constraints": "INTEGRATIONS_ONLY-style: no MQL5 compiler, no MT5, no Windows, no PowerShell in sandbox. CANNOT compile or backtest. Do NOT invent/claim performance numbers. Correctness = careful read-through. Do NOT commit or push (orchestrator commits to main directly, no-PR workflow). Repo is on branch main, already synced.",
+  "contribution_requirements": "Direct-to-main, no PRs. Keep GaganEA.mq5 COMPILABLE MQL5 using <Trade/Trade.mqh> CTrade + CPositionInfo. Preserve OnInit/OnDeinit/OnTick structure and the on-chart dashboard. Keep ASCII (do not ADD non-ASCII; 2 pre-existing em dashes on lines ~1426/1429 stay as-is). Append a Round 4 entry to ITERATION_LOG.md (hypothesis, exact changes, intended effect, what to watch) with NO invented numbers.",
+  "key_patterns": "Gold is 2-3 digit; EA sets pip = point*10 for 3/5-digit symbols, so all `*_Pips` INPUTS ARE POINTS (StopLoss_Pips=1000 = 1000 points ~= $10). SL is computed as StopLoss_Pips*_Point. Indicator handles are ints created in OnInit (iMA/iAMA/iRSI/iMACD/iADX/iVolumes), guarded against INVALID_HANDLE, released in OnDeinit. All buffer reads use ArraySetAsSeries(arr,true) + CopyBuffer/CopyClose/... with `if(copied < n) return;` guards. Entry is gated in OpenTrade(): htfBull&&ctfBull&&farEnough (dist>=Min_EMA_Distance in points) then DetectBullishPattern()>0 then DistanceCheckOK then concurrent-cap and Entry_Cooldown_Bars throttle. Exits: ManageTargets (T1/T2/T3 partials), ManageIndividualTrailing (breakeven after T1, trail after T2), ManageAMAExit, ManageReversalExit, ManageBasketTrailing, CheckEquityProtection, CheckMasterEquityProtection. trade.Buy/Sell take (lots,_Symbol,price,sl,tp,comment).",
+  "relevant_files": [
+    "GaganEA.mq5",
+    "ITERATION_LOG.md",
+    "automation/tuner/params.py",
+    "automation/tuner/mq5_rewriter.py",
+    "automation/tuner/tests/test_rewriter.py",
+    "automation/tuner/tests/test_params.py"
+  ],
+  "directory_structure": "Repo root: GaganEA.mq5 (the EA, ~1720 lines, v2.11), README.md, ITERATION_LOG.md. automation/tuner/ = Python auto-tuner (params.py defines the 11-input space, mq5_rewriter.py rewrites `input` default literals by exact name via regex, tests/ has 38 unittests). tools/analyze_report.py = MT5 HTML report parser. reports/ = backtest reports.",
+  "tuner_managed_inputs_do_not_rename": [
+    "Risk_Percent (double)",
+    "Min_EMA_Distance (int)",
+    "Min_Trade_Distance (int)",
+    "StopLoss_Pips (int)",
+    "T1_Pips (int)",
+    "T2_Pips (int)",
+    "T3_Pips (int)",
+    "T1_ClosePercent (double)",
+    "T2_ClosePercent (double)",
+    "Entry_Cooldown_Bars (int)",
+    "Max_Concurrent_Positions (int)"
+  ]
+}

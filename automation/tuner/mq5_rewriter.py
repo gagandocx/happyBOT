@@ -1,4 +1,4 @@
-"""Read and rewrite `input TYPE Name = value;` lines in GaganEA.mq5.
+"""Read and rewrite `input TYPE Name = value;` lines in HappyBot.mq5.
 
 The rewriter is deliberately conservative and line-based:
   * It matches an input line by EXACT name using a word boundary, so a name
