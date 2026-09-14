@@ -671,3 +671,28 @@ and robust out-of-sample, *not* raw headline return).
 - **Next step:** user runs v2.14 in MT5 (XAUUSD, 2026.07.01-2026.09.01, same window) and
   pushes the report; confirm the hunt improvement is real on the source of truth.
 - **Report file:** reports/pybt/20260914-073203.results.json (engine); MT5 pending.
+
+---
+
+## Round 8 result - v2.14 VALIDATED on MT5 (2026-09-14)
+
+- **The in-sandbox hunt held up on the source of truth.** HappyBot v2.14 (hunt
+  winner "comboA"), XAUUSD, M1 tester, 2026.07.01-2026.09.01, Fusion build 6191.
+  Report confirms v2.14 inputs (Min_EMA_Distance=600, RSI 70/30, ATR_TP_Mult=4.0).
+- **MT5 (truth), v2.14:** net **+100.58**, relative DD **3.15%**, PF **1.59**,
+  124 trades, win 51.61%, avg win +4.22 / avg loss -2.77, recovery 3.00, worst
+  losing streak -18.62 (18% of net). Analyzer verdict: LOOKS REASONABLE (no warnings).
+- **vs v2.13 (MT5): EVERY metric improved** - net +51.50 -> +100.58 (~2x), PF
+  1.14 -> 1.59, DD 5.11% -> 3.15%, recovery 0.98 -> 3.00, win 43.5% -> 51.6%,
+  worst-streak 70% -> 18% of profit.
+- **Parity behaved as calibrated:** engine predicted +189, MT5 delivered +100.58
+  (~1.9x rosy, matching the documented ~2x engine optimism). So the engine's
+  RELATIVE rankings are trustworthy; apply a ~2x discount to its absolute money.
+- **Milestone:** the hunt->validate loop is proven end-to-end. Full arc: v2.10
+  -387.57 @ 41% DD (blow-up-risk loser) -> v2.14 +100.58 @ 3.15% DD, PF 1.59, no
+  warnings (sound, if modest).
+- **CAVEAT:** still only the 2-month in-sample window (2026.07-09). Before trusting
+  live, validate v2.14 on a DIFFERENT / longer period (true out-of-sample).
+- **Next step:** either (a) hunt further for an even thicker edge from this stronger
+  base, or (b) out-of-sample validate v2.14 on a fresh window. Recommend (b) soon.
+- **Report file:** data/ReportTester-470905.html (MT5).
