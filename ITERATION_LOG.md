@@ -643,3 +643,31 @@ and robust out-of-sample, *not* raw headline return).
   window.
 - **Report file:** data/ReportTester-470903.html (MT5); calibration harness
   python_bt/calibrate.py.
+
+---
+
+## Round 8 - Hunt on the calibrated engine -> v2.14 (2026-09-14)
+
+- **First hunt on the CALIBRATED (tick-mode) engine** - numbers are now directionally
+  trustworthy (still ~2x rosier than MT5 due to the documented early-exit parity gap,
+  but relative rankings should carry to MT5).
+- **Tick-mode baseline (v2.13):** net +105, PF 1.29, relDD 5.45%, 129 trades.
+- **Hunt:** 16 variants, then refined. Entry QUALITY was the dominant lever (tighter
+  RSI + wider EMA distance beat everything). Widening TP alone did nothing (T3 tier
+  banks before TP); widening SL hurt PF. Winner **comboA**.
+- **comboA vs v2.13 (engine, full 2mo):** net +189 (was +105), PF **2.25** (was 1.29),
+  relDD **4.06%** (was 5.45%), 83 trades. ~2x profit, ~half the DD, much thicker edge.
+- **Overfit / robustness split (the key test):** comboA holds on BOTH months
+  independently - July net +105 PF 4.10 / August net +109 PF 3.61 - and beats the
+  baseline on every window. Not a one-window spike.
+- **comboA changes vs v2.13 (promoted to EA defaults, v2.14):**
+  - `RSI_Buy_Max` 75 -> **70**, `RSI_Sell_Min` 25 -> **30** (tighter momentum gate)
+  - `Min_EMA_Distance` 400 -> **600** (require a more established trend)
+  - `ATR_TP_Mult` 3.5 -> **4.0** (let winners run; T3 tier 2.2 still < TP)
+  - (Pullback_Lookback 10, Entry_Cooldown_Bars 1 carry over from v2.13.)
+- **CAVEAT:** engine numbers, not MT5. v2.13 validated at +51.50 on MT5; comboA/v2.14
+  should validate meaningfully HIGHER but only MT5 confirms it. The 11 tuner input
+  names/types are intact; Python default_params mirrors v2.14; 95/38/16 tests green.
+- **Next step:** user runs v2.14 in MT5 (XAUUSD, 2026.07.01-2026.09.01, same window) and
+  pushes the report; confirm the hunt improvement is real on the source of truth.
+- **Report file:** reports/pybt/20260914-073203.results.json (engine); MT5 pending.

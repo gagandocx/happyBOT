@@ -221,16 +221,23 @@ class MoneyConversionTests(_PinnedReconConstants):
         self.assertAlmostEqual(config_per_move_per_001, 1.0, places=6)
 
 
-class V213DefaultsTests(unittest.TestCase):
-    """default_params() carries the EA v2.13 inputs FEAT-002 aligned."""
+class V214DefaultsTests(unittest.TestCase):
+    """default_params() carries the EA v2.14 inputs (hunt winner 'comboA').
 
-    def test_v213_calibrated_defaults_present(self):
+    v2.14 tightened the entry (RSI 75/25 -> 70/30, Min_EMA_Distance 400 -> 600)
+    and widened the target (ATR_TP_Mult 3.5 -> 4.0) vs v2.13. Pullback_Lookback
+    (10) and Entry_Cooldown_Bars (1) carry over unchanged from v2.13.
+    """
+
+    def test_v214_defaults_present(self):
         p = HappyBotStrategy.default_params()
         self.assertEqual(p["Pullback_Lookback"], 10)
-        self.assertEqual(p["RSI_Buy_Max"], 75.0)
-        self.assertEqual(p["RSI_Sell_Min"], 25.0)
-        self.assertEqual(p["ATR_TP_Mult"], 3.5)
         self.assertEqual(p["Entry_Cooldown_Bars"], 1)
+        # v2.14 hunt-winner changes:
+        self.assertEqual(p["RSI_Buy_Max"], 70.0)
+        self.assertEqual(p["RSI_Sell_Min"], 30.0)
+        self.assertEqual(p["Min_EMA_Distance"], 600)
+        self.assertEqual(p["ATR_TP_Mult"], 4.0)
 
 
 def _bar_rec(low, high, close, ema_ctf):

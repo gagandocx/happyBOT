@@ -143,15 +143,15 @@ class HappyBotStrategy(Strategy):
         p["ATR_Max_Points"] = 4000.0
         p["Use_ATR_Dynamic_SLTP"] = True
         p["ATR_SL_Mult"] = 1.5
-        p["ATR_TP_Mult"] = 3.5  # EA v2.13 input (was 2.5 in v2.11)
+        p["ATR_TP_Mult"] = 4.0  # EA v2.14 input (v2.13 was 3.5, v2.11 was 2.5)
         p["Use_ATR_Scaled_Tiers"] = True
         p["ATR_T1_Mult"] = 0.8
         p["ATR_T2_Mult"] = 1.5
         p["ATR_T3_Mult"] = 2.2
         p["Use_Confluence_Entry"] = True
         p["RSI_Entry_Period"] = 14
-        p["RSI_Buy_Max"] = 75.0  # EA v2.13 input (was 68 in v2.11)
-        p["RSI_Sell_Min"] = 25.0  # EA v2.13 input (was 32 in v2.11)
+        p["RSI_Buy_Max"] = 70.0  # EA v2.14 input (v2.13 was 75, v2.11 was 68)
+        p["RSI_Sell_Min"] = 30.0  # EA v2.14 input (v2.13 was 25, v2.11 was 32)
         p["Pullback_Lookback"] = 10  # EA v2.13 input (was 6 in v2.11)
         p["Use_Session_Filter"] = True
         p["Session_Start_Hour"] = 7
@@ -162,6 +162,11 @@ class HappyBotStrategy(Strategy):
         # input is 1. Override AFTER tuner defaults so the calibration baseline
         # matches the MT5 run. The tuner still searches its own [0,20] range.
         p["Entry_Cooldown_Bars"] = 1  # EA v2.13 input (was 3 in v2.11)
+        # Min_EMA_Distance is tuner-managed (default 400); the EA v2.14 input is
+        # 600 (the hunt winner: require a more established trend before entry).
+        # Override AFTER tuner defaults so the engine baseline mirrors v2.14; the
+        # tuner still searches its own [100,1200] range.
+        p["Min_EMA_Distance"] = 600  # EA v2.14 input (was 400 through v2.13)
         return p
 
     def __init__(self, params: Optional[Dict] = None):

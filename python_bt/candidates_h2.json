@@ -1,0 +1,10 @@
+[
+  {"strategy": "happybot", "label": "comboA", "params": {"RSI_Buy_Max": 70.0, "RSI_Sell_Min": 30.0, "Min_EMA_Distance": 600, "ATR_TP_Mult": 4.0}},
+  {"strategy": "happybot", "label": "comboA_dist700", "params": {"RSI_Buy_Max": 70.0, "RSI_Sell_Min": 30.0, "Min_EMA_Distance": 700, "ATR_TP_Mult": 4.0}},
+  {"strategy": "happybot", "label": "comboA_dist500", "params": {"RSI_Buy_Max": 70.0, "RSI_Sell_Min": 30.0, "Min_EMA_Distance": 500, "ATR_TP_Mult": 4.0}},
+  {"strategy": "happybot", "label": "comboA_rsi68", "params": {"RSI_Buy_Max": 68.0, "RSI_Sell_Min": 32.0, "Min_EMA_Distance": 600, "ATR_TP_Mult": 4.0}},
+  {"strategy": "happybot", "label": "comboA_rsi72", "params": {"RSI_Buy_Max": 72.0, "RSI_Sell_Min": 28.0, "Min_EMA_Distance": 600, "ATR_TP_Mult": 4.0}},
+  {"strategy": "happybot", "label": "comboA_tp3.5", "params": {"RSI_Buy_Max": 70.0, "RSI_Sell_Min": 30.0, "Min_EMA_Distance": 600, "ATR_TP_Mult": 3.5}},
+  {"strategy": "happybot", "label": "comboA_t3scaled", "params": {"RSI_Buy_Max": 70.0, "RSI_Sell_Min": 30.0, "Min_EMA_Distance": 600, "ATR_TP_Mult": 4.0, "ATR_T3_Mult": 3.2, "T3_Pips": 2600}},
+  {"strategy": "happybot", "label": "comboA_london", "params": {"RSI_Buy_Max": 70.0, "RSI_Sell_Min": 30.0, "Min_EMA_Distance": 600, "ATR_TP_Mult": 4.0, "Session_Start_Hour": 8, "Session_End_Hour": 17}}
+]

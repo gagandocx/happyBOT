@@ -1,5 +1,5 @@
 //+------------------------------------------------------------------+
-//|                                        HappyBot v2.13 |
+//|                                        HappyBot v2.14 |
 //|                           Reconstructed from UI + Backtest Data  |
 //|                                                                  |
 //| ROUND 4 STRUCTURAL EDGE ATTEMPT (v2.12):                         |
@@ -23,8 +23,8 @@
 //|  active, since those are independent filters).                   |
 //|  See ITERATION_LOG.md Round 4 for the exact changes.             |
 //+------------------------------------------------------------------+
-#property copyright "HappyBot v2.13"
-#property version   "2.13"
+#property copyright "HappyBot v2.14"
+#property version   "2.14"
 #property strict
 
 #include <Trade\Trade.mqh>
@@ -57,7 +57,7 @@ input int             EMA_Period_HTF      = 200;
 input group "=== TRADE EXECUTION (Current TF) ==="
 input ENUM_TIMEFRAMES Trade_Timeframe     = PERIOD_M5;
 input int             EMA_Period_CTF      = 200;
-input int             Min_EMA_Distance    = 400;
+input int             Min_EMA_Distance    = 600;
 
 input group "=== LOT SIZE ==="
 input double          Manual_LotSize      = 0.0;
@@ -171,7 +171,7 @@ input double          ATR_Min_Points       = 150.0;    // min ATR in POINTS to a
 input double          ATR_Max_Points       = 4000.0;   // max ATR in POINTS to allow trading (skip hostile spikes)
 input bool            Use_ATR_Dynamic_SLTP = true;
 input double          ATR_SL_Mult          = 1.5;      // SL distance = ATR_SL_Mult * ATR (price units)
-input double          ATR_TP_Mult          = 3.5;      // core TP distance = ATR_TP_Mult * ATR (R:R ~2.33; v2.13 tuned up from 2.5)
+input double          ATR_TP_Mult          = 4.0;      // core TP distance = ATR_TP_Mult * ATR (v2.14 tuned up from 3.5)
 input bool            Use_ATR_Scaled_Tiers = true;     // when ATR SL/TP is on, scale the T1/T2/T3 tiers off ATR too
 input double          ATR_T1_Mult          = 0.8;      // T1 tier distance = ATR_T1_Mult * ATR (below TP so it banks first)
 input double          ATR_T2_Mult          = 1.5;      // T2 tier distance = ATR_T2_Mult * ATR (arms the after-T2 runner trail)
@@ -181,8 +181,8 @@ input group "=== ENTRY CONFLUENCE (Round 4) ==="
 input bool            Use_Confluence_Entry   = true;   // master switch for the new confluence gate
 input bool            Require_Pattern_Confirm = false; // also require legacy pattern as secondary confirm
 input int             RSI_Entry_Period       = 14;
-input double          RSI_Buy_Max            = 75.0;   // do NOT buy if entry RSI above this (v2.13 tuned up from 68)
-input double          RSI_Sell_Min           = 25.0;   // do NOT sell if entry RSI below this (v2.13 tuned down from 32)
+input double          RSI_Buy_Max            = 70.0;   // do NOT buy if entry RSI above this (v2.14 tightened from 75)
+input double          RSI_Sell_Min           = 30.0;   // do NOT sell if entry RSI below this (v2.14 tightened from 25)
 input int             Pullback_Lookback      = 10;     // bars to look back for EMA pullback-and-resume (v2.13 up from 6)
 
 input group "=== SESSION / TIME FILTER (Round 4) ==="
@@ -199,7 +199,7 @@ input int             Dashboard_Y        = 30;
 input int             Magic_Number       = 202400;
 input int             Max_Slippage       = 10;
 input int             Max_Spread_Pips    = 50;
-input string          EA_Comment         = "HappyBot v2.13";
+input string          EA_Comment         = "HappyBot v2.14";
 
 //+------------------------------------------------------------------+
 //| GLOBAL VARIABLES                                                  |
@@ -349,7 +349,7 @@ int OnInit()
    
    if(Show_Dashboard) CreateDashboard();
    
-   Print("HappyBot v2.13 initialized on ", _Symbol, " TF:", EnumToString(Trade_Timeframe));
+   Print("HappyBot v2.14 initialized on ", _Symbol, " TF:", EnumToString(Trade_Timeframe));
    return INIT_SUCCEEDED;
 }
 
@@ -374,7 +374,7 @@ void OnDeinit(const int reason)
    if(rsi_entry_handle != INVALID_HANDLE) IndicatorRelease(rsi_entry_handle);
    
    DeleteDashboard();
-   Print("HappyBot v2.13 removed. Reason: ", reason);
+   Print("HappyBot v2.14 removed. Reason: ", reason);
 }
 
 //+------------------------------------------------------------------+
@@ -1691,7 +1691,7 @@ void CreateDashboard()
 
    // Title row — orange square bullet like OFT
    ObjLabel(lbl+"bullet", "\x25A0", x, y+2, C'255,140,0', 10, true);
-   ObjLabel(lbl+"title",  " HappyBot v2.13", x+12, y+2, clrWhite, 9, true);
+   ObjLabel(lbl+"title",  " HappyBot v2.14", x+12, y+2, clrWhite, 9, true);
    ObjLine(lbl+"d0", x, y+18, 305);
    
    // --- Symbol / TF block ---

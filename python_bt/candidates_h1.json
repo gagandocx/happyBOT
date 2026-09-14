@@ -1,0 +1,23 @@
+[
+  {"strategy": "happybot", "label": "v2.13_base", "params": {}},
+
+  {"strategy": "happybot", "label": "tighter_rsi_70_30", "params": {"RSI_Buy_Max": 70.0, "RSI_Sell_Min": 30.0}},
+  {"strategy": "happybot", "label": "tighter_rsi_65_35", "params": {"RSI_Buy_Max": 65.0, "RSI_Sell_Min": 35.0}},
+
+  {"strategy": "happybot", "label": "wider_dist_600", "params": {"Min_EMA_Distance": 600}},
+  {"strategy": "happybot", "label": "wider_dist_800", "params": {"Min_EMA_Distance": 800}},
+
+  {"strategy": "happybot", "label": "atr_regime_tight", "params": {"ATR_Min_Points": 250.0, "ATR_Max_Points": 2500.0}},
+  {"strategy": "happybot", "label": "atr_regime_higher_floor", "params": {"ATR_Min_Points": 350.0}},
+
+  {"strategy": "happybot", "label": "rr_tp4.0", "params": {"ATR_TP_Mult": 4.0}},
+  {"strategy": "happybot", "label": "rr_tp4.5", "params": {"ATR_TP_Mult": 4.5}},
+  {"strategy": "happybot", "label": "rr_sl1.3_tp4.0", "params": {"ATR_SL_Mult": 1.3, "ATR_TP_Mult": 4.0}},
+  {"strategy": "happybot", "label": "rr_sl1.8_tp4.5", "params": {"ATR_SL_Mult": 1.8, "ATR_TP_Mult": 4.5}},
+
+  {"strategy": "happybot", "label": "session_london_ny", "params": {"Session_Start_Hour": 8, "Session_End_Hour": 17}},
+  {"strategy": "happybot", "label": "session_ny_only", "params": {"Session_Start_Hour": 13, "Session_End_Hour": 20}},
+
+  {"strategy": "happybot", "label": "quality_combo_A", "params": {"RSI_Buy_Max": 70.0, "RSI_Sell_Min": 30.0, "Min_EMA_Distance": 600, "ATR_TP_Mult": 4.0}},
+  {"strategy": "happybot", "label": "quality_combo_B", "params": {"RSI_Buy_Max": 65.0, "RSI_Sell_Min": 35.0, "ATR_Min_Points": 250.0, "ATR_TP_Mult": 4.0, "Session_Start_Hour": 8, "Session_End_Hour": 17}}
+]
