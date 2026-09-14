@@ -541,3 +541,26 @@ and robust out-of-sample, *not* raw headline return).
   tick-value multiplier). If MT5 confirms even roughly, we have the first
   genuinely viable version; then continue hunting new structural ideas in-sandbox.
 - **Report file:** reports/pybt/*.results.json (in-sandbox); MT5 report pending.
+
+---
+
+## Round 6 result - v2.13 VALIDATED on MT5 (2026-09-14)
+
+- **First real MT5 validation of a hunt winner.** HappyBot v2.13, XAUUSD, M1 tester,
+  2026.07.01-2026.09.01 (same window as the in-sandbox hunt), Fusion build 6191.
+- **MT5 (source of truth):** net **+51.50**, relative DD **5.11%**, PF **1.14**,
+  209 trades, win 43.54%, avg win +4.51 / avg loss -2.99, Sharpe 9.95, recovery 0.98.
+- **vs Python engine (same window):** net +326, PF 2.11, 109 trades, win 50%.
+- **VERDICT:** Genuine milestone - MT5 confirms v2.13 is PROFITABLE with DD well
+  under the 15% target (5.11%), and reward:risk is right-side-up (win 4.51 > loss
+  2.99). Huge improvement over the v2.10 baseline (-387.57 / 41% DD). BUT: the edge
+  is thin (PF 1.14) and fragile (worst losing streak -35.86 = 70% of net profit).
+- **PARITY GAP (must fix before more hunting):** the Python engine was ~6x too
+  optimistic on profit (+326 vs +51.50) and took ~half the trades (109 vs 209) at a
+  higher win rate (50% vs 43.5%). So the engine's fill model is too generous and it
+  is missing/mismodeling entries+exits. We now have BOTH a Python run and its MT5
+  truth for the identical strategy+window - the data needed to CALIBRATE the engine.
+- **Next step (Round 7):** calibrate the Python backtester against this MT5 report
+  (trade count, win rate, avg win/loss, net, DD) - fix fill timing/cost/entry
+  modeling until Python ~= MT5 - THEN resume hunting on a trustworthy engine.
+- **Report file:** data/ReportTester-470903.html (MT5); reports/pybt/*.results.json (Py).
